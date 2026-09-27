@@ -585,13 +585,12 @@ class TrayManager {
      * Destroy the tray icon and unregister shortcuts (cleanup)
      */
     destroy(): void {
-        if (this.currentShortcut) {
-            try {
-                globalShortcut.unregister(this.currentShortcut);
-            } catch (e) {
-                console.warn('[TrayManager] Failed to unregister shortcut on destroy:', e);
-            }
-        }
+        // Stop a pending suspension so tabs are not unloaded while the app quits
+        this._cancelSuspension();
+
+        // Unregister both global shortcuts (hide + always-on-top)
+        this._unregisterShortcut('hide');
+        this._unregisterShortcut('alwaysOnTop');
 
         if (this.tray) {
             this.tray.destroy();

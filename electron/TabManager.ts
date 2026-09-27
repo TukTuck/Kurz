@@ -125,6 +125,56 @@ class TabManager {
     }
 
     /**
+     * Attach a view to the window (idempotent).
+     * Adding the same WebContentsView twice used to happen when the pinned tab was
+     * also the active tab - Electron does not guard against that, so we do.
+     */
+    private _addView(view: WebContentsView | null): void {
+        if (!view) return;
+        try {
+            if (this.mainWindow.isDestroyed()) return;
+            if (!this.mainWindow.contentView.children.includes(view)) {
+                this.mainWindow.contentView.addChildView(view);
+            }
+        } catch (e) {
+            console.warn('Could not add view:', e);
+        }
+    }
+
+    /**
+     * Detach a view from the window (idempotent)
+     */
+    private _removeView(view: WebContentsView | null): void {
+        if (!view) return;
+        try {
+            if (this.mainWindow.isDestroyed()) return;
+            if (this.mainWindow.contentView.children.includes(view)) {
+                this.mainWindow.contentView.removeChildView(view);
+            }
+        } catch (e) {
+            console.warn('Could not remove view:', e);
+        }
+    }
+
+    /**
+     * Hide every attached WebContentsView (active tab + pinned side panel).
+     * Used by the renderer to reveal overlays (popovers, search palette) that would
+     * otherwise be covered by the web content.
+     */
+    hideAllViews(): void {
+        this._removeView(this.getActiveView());
+        this._removeView(this.getPinnedView());
+    }
+
+    /**
+     * Re-attach the views that were hidden via hideAllViews()
+     */
+    showAllViews(): void {
+        this._addView(this.getActiveView());
+        this._addView(this.getPinnedView());
+    }
+
+    /**
      * Set the download manager for tracking downloads
      */
     setDownloadManager(manager: { addDownload: (item: Electron.DownloadItem) => void }): void {
@@ -776,15 +826,19 @@ class TabManager {
 
         tab.view = view;
         tab.loaded = true;
+        tab.suspended = false;
         tab.lastActiveTime = Date.now();
 
         view.webContents.loadURL(tab.url);
         this._setupViewListeners(tabId, view);
 
-        // Notify frontend that this tab is now loaded
+        // Notify frontend that this tab is now loaded.
+        // `suspended: false` is important: without it the renderer keeps showing the
+        // tab as suspended (dimmed + "(suspended)" tooltip) after it was reloaded.
         this.mainWindow.webContents.send('tab-updated', {
             id: tabId,
-            loaded: true
+            loaded: true,
+            suspended: false
         });
 
         return true;
@@ -807,11 +861,7 @@ class TabManager {
 
         // Remove from window if it's the active view
         if (this.activeTabId === tabId) {
-            try {
-                this.mainWindow.contentView.removeChildView(tab.view);
-            } catch (e) {
-                console.warn('Could not remove view:', e);
-            }
+            this._removeView(tab.view);
         }
 
         // Destroy the view
@@ -933,25 +983,23 @@ class TabManager {
                     const currentState = this.getCurrentSidePanelState();
                     const isPinnedTab = currentState?.pinnedTabId === this.activeTabId;
                     if (!isPinnedTab) {
-                        try {
-                            this.mainWindow.contentView.removeChildView(currentTab.view);
-                        } catch (e) {
-                            console.warn('Could not remove view:', e);
-                        }
+                        this._removeView(currentTab.view);
                     }
                 }
             }
         }
 
-        try {
-            this.mainWindow.contentView.addChildView(tab.view!);
-            this.activeTabId = tabId;
-
-            return true;
-        } catch (e) {
-            console.error('Could not add view:', e);
+        // The view must exist at this point - loadTab() creates it. Bail out instead of
+        // crashing on a null view (e.g. when the WebContentsView could not be created).
+        if (!tab.view) {
+            console.error(`[TabManager] Cannot switch to tab ${tabId} - no view available`);
             return false;
         }
+
+        this._addView(tab.view);
+        this.activeTabId = tabId;
+
+        return true;
     }
 
     closeTab(tabId: string): void {
@@ -966,11 +1014,7 @@ class TabManager {
         }
 
         if (this.activeTabId === tabId && tab.view) {
-            try {
-                this.mainWindow.contentView.removeChildView(tab.view);
-            } catch (e) {
-                console.warn('Could not remove view:', e);
-            }
+            this._removeView(tab.view);
             this.activeTabId = null;
         }
 
@@ -1082,27 +1126,11 @@ class TabManager {
     }
 
     hideActiveView(): void {
-        if (!this.activeTabId) return;
-        const tab = this.tabs.get(this.activeTabId);
-        if (tab && tab.view) {
-            try {
-                this.mainWindow.contentView.removeChildView(tab.view);
-            } catch (e) {
-                console.warn('Could not hide view:', e);
-            }
-        }
+        this._removeView(this.getActiveView());
     }
 
     showActiveView(): void {
-        if (!this.activeTabId) return;
-        const tab = this.tabs.get(this.activeTabId);
-        if (tab && tab.view) {
-            try {
-                this.mainWindow.contentView.addChildView(tab.view);
-            } catch (e) {
-                console.warn('Could not show view:', e);
-            }
-        }
+        this._addView(this.getActiveView());
     }
 
     /**
@@ -1150,12 +1178,8 @@ class TabManager {
             if (oldState) {
                 const oldPinnedTab = this.tabs.get(oldState.pinnedTabId);
                 if (oldPinnedTab?.view) {
-                    try {
-                        this.mainWindow.contentView.removeChildView(oldPinnedTab.view);
-                        console.log(`[TabManager] Removed pinned view for profile ${fromProfileId}`);
-                    } catch (e) {
-                        console.warn('Could not remove old pinned view:', e);
-                    }
+                    this._removeView(oldPinnedTab.view);
+                    console.log(`[TabManager] Removed pinned view for profile ${fromProfileId}`);
                 }
             }
         }
@@ -1178,7 +1202,7 @@ class TabManager {
 
                 // Add view to window
                 if (newPinnedTab.view) {
-                    this.mainWindow.contentView.addChildView(newPinnedTab.view);
+                    this._addView(newPinnedTab.view);
                     console.log(`[TabManager] Added pinned view for profile ${toProfileId}`);
                 }
 
@@ -1224,12 +1248,8 @@ class TabManager {
         if (currentState && currentState.pinnedTabId !== tabId) {
             const oldPinnedTab = this.tabs.get(currentState.pinnedTabId);
             if (oldPinnedTab?.view) {
-                try {
-                    this.mainWindow.contentView.removeChildView(oldPinnedTab.view);
-                    console.log(`[TabManager] Removed old pinned tab ${currentState.pinnedTabId}`);
-                } catch (e) {
-                    console.warn('Could not remove old pinned view:', e);
-                }
+                this._removeView(oldPinnedTab.view);
+                console.log(`[TabManager] Removed old pinned tab ${currentState.pinnedTabId}`);
             }
         }
 
@@ -1270,11 +1290,11 @@ class TabManager {
             }
         }
 
-        // NOW add the pinned view to the window (after switchTo is done)
+        // NOW add the pinned view to the window (after switchTo is done).
+        // _addView() is idempotent, so pinning the only tab of a profile (where no
+        // switch happened and the view is already attached) is safe.
         const pinnedTab = this.tabs.get(tabId);
-        if (pinnedTab?.view) {
-            this.mainWindow.contentView.addChildView(pinnedTab.view);
-        }
+        this._addView(pinnedTab?.view ?? null);
 
         // Notify frontend
         this.mainWindow.webContents.send('side-panel-state-changed', newState);
@@ -1301,11 +1321,7 @@ class TabManager {
 
         // Remove the pinned view from window (if it exists and isn't the active tab)
         if (pinnedTab?.view && pinnedTabId !== this.activeTabId) {
-            try {
-                this.mainWindow.contentView.removeChildView(pinnedTab.view);
-            } catch (e) {
-                console.warn('Could not remove pinned view:', e);
-            }
+            this._removeView(pinnedTab.view);
         }
 
         console.log(`[TabManager] Unpinned side panel for profile ${this.currentProfileId} (was tab ${pinnedTabId})`);

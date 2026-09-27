@@ -370,6 +370,8 @@ function createWindow(): void {
     downloadManager = new DownloadManager();
     downloadManager.setMainWindow(mainWindow);
     tabManager.setDownloadManager(downloadManager);
+    // Auto-open the downloads window when a download starts (TabManager calls this)
+    tabManager.setOpenDownloadsWindow(createDownloadsWindow);
     // Toast notifications are now sent directly from DownloadManager
 
     // Initialize AdBlockManager
@@ -443,7 +445,7 @@ function createWindow(): void {
     tabManager.setUpdateViewBounds(updateViewBounds);
 
     // Register all IPC handlers
-    WindowHandlers.register(mainWindow);
+    WindowHandlers.register(mainWindow, tabManager);
 
     TabHandlers.register(mainWindow, {
         tabManager,

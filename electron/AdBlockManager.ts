@@ -291,6 +291,9 @@ class AdBlockManager {
 
         // Re-enable for all active sessions
         for (const partitionName of this.enabledSessions) {
+            // Skip the internal ":events" bookkeeping entries - they are not real
+            // partitions and would create stray sessions via session.fromPartition()
+            if (partitionName.includes(':events')) continue;
             this._enableForPartition(partitionName);
         }
 

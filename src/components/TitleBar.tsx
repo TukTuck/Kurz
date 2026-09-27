@@ -1,6 +1,7 @@
 import { Minus, Square, X, ChevronDown, ArrowLeft, RotateCw, Plus, Briefcase, User, Home, Zap, Code, Globe, Check, LucideIcon, AlertTriangle, Volume2 } from 'lucide-react'
 import { useState, useEffect, SyntheticEvent, DragEvent } from 'react'
 import type { Profile, AIProvider, TabMemoryInfo, SidePanelState } from '../types'
+import { formatMemoryKB } from '../lib/format'
 
 interface TabState {
     id: string;
@@ -294,7 +295,7 @@ export default function TitleBar({
                                     `}
                                 title={(() => {
                                     const mem = tabMemory[tab.id];
-                                    const memStr = mem?.memoryKB ? ` (${mem.memoryKB} MB)` : '';
+                                    const memStr = mem?.loaded ? ` (${formatMemoryKB(mem.memoryKB)})` : '';
                                     if (isPinnedTab) {
                                         const side = sidePanelState?.panelSide === 'left' ? 'Left' : 'Right';
                                         return `${tab.title} (Pinned to ${side})`;

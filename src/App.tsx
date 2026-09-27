@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import TitleBar from './components/TitleBar'
+import TabSearchOverlay from './components/TabSearchOverlay'
 import type { Profile, AIProvider, Settings, TabCreatedEvent, TabUpdatedEvent, ProfileTabsLoadedEvent, TabMemoryInfo, SidePanelState } from './types'
 
 interface TabState {
@@ -32,6 +33,7 @@ function App() {
     const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info'>('success')
     const [sidePanelState, setSidePanelState] = useState<SidePanelState | null>(null)
     const [isPanelPulsing, setIsPanelPulsing] = useState<boolean>(false)
+    const [isTabSearchOpen, setIsTabSearchOpen] = useState<boolean>(false)
 
     const closeTabRef = useRef<((tabId: string) => void) | null>(null)
 
@@ -83,7 +85,7 @@ function App() {
                 // Store afterTabId as parentTabId so we can return to it when closing
                 const newTab = {
                     ...tab,
-                    url: '',
+                    url: tab.url ?? '',
                     loaded: tab.loaded ?? false,
                     faviconDataUrl: tab.faviconDataUrl,
                     loading: tab.loaded ?? false,
@@ -176,6 +178,12 @@ function App() {
             setTabs(prev => prev.filter(tab => tab.id !== tabId))
         })
 
+        const cleanupOpenTabSearch = window.api.onOpenTabSearch?.(() => {
+            setIsTabSearchOpen(true)
+            // Detach the web content so the palette is not covered by it
+            window.api.hideWebView?.()
+        })
+
         const cleanupSettingsUpdated = window.api.onSettingsUpdated((newSettings: Settings) => {
             console.log('App: Settings updated', newSettings)
             if (newSettings.profiles) {
@@ -220,6 +228,7 @@ function App() {
             if (cleanupTabClosedBackend) cleanupTabClosedBackend()
             if (cleanupSettingsUpdated) cleanupSettingsUpdated()
             if (cleanupShowToast) cleanupShowToast()
+            if (cleanupOpenTabSearch) cleanupOpenTabSearch()
             if (cleanupSidePanel) cleanupSidePanel()
             if (cleanupPulse) cleanupPulse()
         }
@@ -254,14 +263,20 @@ function App() {
     }
 
     const switchTab = (tabId: string) => {
-        setActiveTabId(tabId)
-        window.api.switchTab(tabId)
-
         const targetTab = tabs.find(t => t.id === tabId);
-        if (targetTab && targetTab.profileId && targetTab.profileId !== activeProfileId) {
+
+        // The tab search can surface tabs from other profiles. The profile has to be
+        // switched BEFORE the tab, otherwise the backend derives the "previous"
+        // profile from the tab we are about to activate and skips the switch
+        // (which would leave the wrong side panel / suspension state behind).
+        if (targetTab?.profileId && targetTab.profileId !== activeProfileId) {
+            window.api.switchProfile(targetTab.profileId);
             setActiveProfileId(targetTab.profileId);
             localStorage.setItem('lastActiveProfileId', targetTab.profileId);
         }
+
+        setActiveTabId(tabId)
+        window.api.switchTab(tabId)
     }
 
     const closeTab = (tabId: string) => {
@@ -556,6 +571,19 @@ function App() {
             )}
 
             <div className="flex-1" />
+
+            {/* Tab search palette (Ctrl+Shift+K) */}
+            {isTabSearchOpen && (
+                <TabSearchOverlay
+                    tabs={tabs}
+                    activeTabId={activeTabId}
+                    onSelectTab={switchTab}
+                    onClose={() => {
+                        setIsTabSearchOpen(false)
+                        window.api.showWebView?.()
+                    }}
+                />
+            )}
         </div >
     )
 }

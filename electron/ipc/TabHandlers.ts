@@ -1,4 +1,5 @@
 import { ipcMain, BrowserWindow } from 'electron';
+import { MAX_CLOSED_TABS } from '../constants';
 import type TabManager from '../TabManager';
 import type SettingsManager from '../SettingsManager';
 import type SessionManager from '../SessionManager';
@@ -114,7 +115,7 @@ export function register(
                 url: tab.url,
                 title: tab.title
             });
-            if (closedTabs.length > 10) closedTabs.shift();
+            if (closedTabs.length > MAX_CLOSED_TABS) closedTabs.shift();
         }
 
         tabManager.closeTab(tabId);

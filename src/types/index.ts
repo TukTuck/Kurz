@@ -228,6 +228,7 @@ export interface ElectronAPI {
     onSettingsUpdated: (callback: (settings: Settings) => void) => () => void;
     onProfileDeleted: (callback: (profileId: string) => void) => () => void;
     onOpenSettingsModal: (callback: () => void) => () => void;
+    onOpenTabSearch: (callback: () => void) => () => void;
 
     // Navigation
     goBack: () => void;
@@ -294,6 +295,7 @@ export interface TabCreatedEvent {
     id: string;
     profileId: string;
     title: string;
+    url?: string;
     loaded?: boolean;
     faviconDataUrl?: string;
     afterTabId?: string; // For inserting new tab after its parent tab
