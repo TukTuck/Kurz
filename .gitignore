@@ -12,6 +12,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Local UI preview (mocked Electron API, not part of the app build)
+preview/
+
 # Test / coverage output
 coverage/
 .vitest/

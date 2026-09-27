@@ -207,7 +207,7 @@ export interface ElectronAPI {
     closeTabsToRight: (tabId: string, profileId: string) => void;
     reorderTabs: (newOrder: string[]) => void;
     getProfileTabs: (profileId: string) => Promise<{ tabs: TabInfo[]; lastActiveTabId: string | null }>;
-    getAllTabs: () => Promise<TabInfo[]>;
+    getAllTabs: () => Promise<{ tabs: TabInfo[]; activeTabId: string | null }>;
     onTabCreated: (callback: (tab: TabCreatedEvent) => void) => () => void;
     onTabUpdated: (callback: (update: TabUpdatedEvent) => void) => () => void;
     onTabClosedBackend: (callback: (tabId: string) => void) => () => void;

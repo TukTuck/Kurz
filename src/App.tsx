@@ -51,11 +51,12 @@ function App() {
                     if (settings.defaultProviderId) setDefaultProviderId(settings.defaultProviderId);
                 }
 
-                const tabData = await window.api.getAllTabs() as TabState[];
-                if (tabData && tabData.length > 0) {
-                    setTabs(tabData);
-                    // Find the first tab to set as active
-                    const firstTab = tabData[0];
+                // The main process answers with { tabs, activeTabId } - treating the
+                // response as an array made this whole block dead code.
+                const { tabs: existingTabs, activeTabId: backendActiveTabId } = await window.api.getAllTabs();
+                if (existingTabs && existingTabs.length > 0) {
+                    setTabs(existingTabs);
+                    const firstTab = existingTabs.find(t => t.id === backendActiveTabId) || existingTabs[0];
                     if (firstTab) {
                         setActiveTabId(firstTab.id);
                         if (firstTab.profileId) {
