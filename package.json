@@ -1,0 +1,132 @@
+{
+  "name": "mash-ai",
+  "productName": "MashAI",
+  "version": "1.0.0-beta",
+  "author": {
+    "name": "Avaxerrr",
+    "email": "avaxerrr@users.noreply.github.com"
+  },
+  "description": "Your unified AI workspace - ChatGPT, Claude, Gemini, and more organized in one desktop app",
+  "main": "dist/electron/main.js",
+  "license": "MPL-2.0",
+  "type": "module",
+  "scripts": {
+    "build:ts": "tsc -p tsconfig.electron.json && echo {\"type\":\"commonjs\"} > dist/electron/package.json",
+    "watch:ts": "tsc -p tsconfig.electron.json --watch",
+    "dev": "npm run build:ts && concurrently --kill-others \"npm run watch:ts\" \"vite\" \"wait-on tcp:5173 && cross-env NODE_ENV=development electron .\"",
+    "build": "vite build && npm run build:ts",
+    "build:electron": "npm run build && electron-builder",
+    "build:win": "npm run build && electron-builder --win",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:linux": "npm run build && electron-builder --linux",
+    "preview": "vite preview",
+    "lint": "eslint ."
+  },
+  "build": {
+    "appId": "com.mashai.app",
+    "productName": "MashAI",
+    "files": [
+      "dist/**/*",
+      "dist/electron/package.json",
+      "!electron/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "extraResources": [
+      {
+        "from": "src/assets",
+        "to": "assets"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "src/assets/MashAI-logo.ico"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "src/assets/MashAI-logo.icns",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "src/assets/MashAI-logo.png",
+      "category": "Utility",
+      "desktop": {
+        "StartupWMClass": "MashAI"
+      }
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "src/assets/MashAI-logo.ico",
+      "uninstallerIcon": "src/assets/MashAI-logo.ico"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^25.0.3",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^39.2.7",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "globals": "^15.13.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.5",
+    "wait-on": "^8.0.1"
+  },
+  "dependencies": {
+    "@ghostery/adblocker-electron": "^2.13.2",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.5"
+  }
+}

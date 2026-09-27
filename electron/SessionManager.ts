@@ -1,0 +1,341 @@
+import { app, BrowserWindow } from 'electron';
+import * as path from 'path';
+import * as fs from 'fs';
+import type { Session, SessionTab, WindowState, SidePanelState } from './types';
+import type TabManager from './TabManager';
+import type SettingsManager from './SettingsManager';
+
+/**
+ * Manages session persistence (tabs, window state, etc.)
+ * Supports lazy loading based on performance settings
+ */
+class SessionManager {
+    private tabManager: TabManager;
+    private settingsManager: SettingsManager;
+    private currentWindowState: WindowState;
+    private activeTabByProfile: Record<string, string>;
+    private sidePanelByProfile: Record<string, SidePanelState | null>;
+
+    constructor(tabManager: TabManager, settingsManager: SettingsManager) {
+        this.tabManager = tabManager;
+        this.settingsManager = settingsManager;
+        this.currentWindowState = { width: 1200, height: 800, isMaximized: false };
+        this.activeTabByProfile = {};
+        this.sidePanelByProfile = {};
+    }
+
+    /**
+     * Get the path to the session file
+     */
+    getSessionFile(): string {
+        return path.join(app.getPath('userData'), 'session.json');
+    }
+
+    /**
+     * Update the current window state
+     */
+    updateWindowState(state: Partial<WindowState>): void {
+        this.currentWindowState = { ...this.currentWindowState, ...state };
+    }
+
+    /**
+     * Get the tab loading strategy from settings
+     */
+    getTabLoadingStrategy(): 'all' | 'activeProfile' | 'lastActiveOnly' {
+        if (this.settingsManager) {
+            const settings = this.settingsManager.getSettings();
+            if (settings.performance && settings.performance.tabLoadingStrategy) {
+                return settings.performance.tabLoadingStrategy;
+            }
+        }
+        return 'lastActiveOnly';
+    }
+
+    /**
+     * Save current session to disk
+     */
+    saveSession(): void {
+        if (!this.tabManager) return;
+
+        // Derive the last active profile from the active tab
+        let lastActiveProfileId: string | null = null;
+        if (this.tabManager.activeTabId) {
+            const activeTab = this.tabManager.tabs.get(this.tabManager.activeTabId);
+            if (activeTab) {
+                lastActiveProfileId = activeTab.profileId;
+                this.activeTabByProfile[activeTab.profileId] = this.tabManager.activeTabId;
+            }
+        }
+
+        // Clean up only if saved tab no longer exists
+        for (const profileId of Object.keys(this.activeTabByProfile)) {
+            const savedTabId = this.activeTabByProfile[profileId];
+            const savedTab = this.tabManager.tabs.get(savedTabId);
+
+            if (!savedTab || savedTab.profileId !== profileId) {
+                const profileTabs = this.tabManager.getTabsForProfile(profileId);
+                if (profileTabs.length > 0) {
+                    this.activeTabByProfile[profileId] = profileTabs[0].id;
+                } else {
+                    delete this.activeTabByProfile[profileId];
+                }
+            }
+        }
+
+        // Check if rememberWindowPosition is enabled
+        const settings = this.settingsManager.getSettings();
+        const rememberWindowPosition = settings.general?.rememberWindowPosition !== false;
+
+        // Get all side panel states from TabManager (source of truth)
+        // Replace entirely - if a tab was unpinned, it won't be in TabManager's state
+        this.sidePanelByProfile = this.tabManager.getAllSidePanelStates();
+
+        const sessionData: Session = {
+            tabs: Array.from(this.tabManager.tabs.values()).map(t => ({
+                id: t.id,
+                profileId: t.profileId,
+                url: t.url,
+                title: t.title,
+                faviconDataUrl: t.faviconDataUrl
+            })),
+            activeTabId: this.tabManager.activeTabId,
+            lastActiveProfileId: lastActiveProfileId,
+            activeTabByProfile: this.activeTabByProfile,
+            // Only save window bounds if setting is enabled
+            windowBounds: rememberWindowPosition ? this.currentWindowState : { width: 1200, height: 800 },
+            isMaximized: rememberWindowPosition ? this.currentWindowState.isMaximized : false,
+            sidePanelByProfile: this.sidePanelByProfile
+        };
+
+        try {
+            fs.writeFileSync(this.getSessionFile(), JSON.stringify(sessionData, null, 2));
+        } catch (e) {
+            console.error('Failed to save session:', e);
+        }
+    }
+
+    /**
+     * Restore session from disk with lazy loading support
+     */
+    restoreSession(mainWindow: BrowserWindow, updateViewBounds: () => void): void {
+        try {
+            if (!fs.existsSync(this.getSessionFile())) return;
+
+            const data = JSON.parse(fs.readFileSync(this.getSessionFile(), 'utf-8')) as Session;
+
+            if (!data.tabs || data.tabs.length === 0) return;
+
+            // Load activeTabByProfile into memory first
+            if (data.activeTabByProfile) {
+                this.activeTabByProfile = { ...data.activeTabByProfile };
+            }
+
+            const strategy = this.getTabLoadingStrategy();
+            const lastActiveProfileId = data.lastActiveProfileId;
+            const activeTabId = data.activeTabId;
+
+            console.log(`[SessionManager] Restoring session with strategy: ${strategy}`);
+            console.log(`[SessionManager] Found ${data.tabs.length} tabs to restore`);
+
+            // Determine which tabs should be loaded immediately
+            const tabsToLoad = new Set<string>();
+
+            switch (strategy) {
+                case 'all':
+                    console.log('[SessionManager] Strategy: all - loading all tabs');
+                    data.tabs.forEach(t => tabsToLoad.add(t.id));
+                    break;
+
+                case 'activeProfile':
+                    console.log(`[SessionManager] Strategy: activeProfile - loading tabs for profile ${lastActiveProfileId}`);
+                    data.tabs.forEach(t => {
+                        if (t.profileId === lastActiveProfileId) {
+                            tabsToLoad.add(t.id);
+                        }
+                    });
+                    break;
+
+                case 'lastActiveOnly':
+                default:
+                    console.log(`[SessionManager] Strategy: lastActiveOnly - loading only tab ${activeTabId}`);
+                    if (activeTabId) {
+                        tabsToLoad.add(activeTabId);
+                    } else if (lastActiveProfileId) {
+                        const profileActiveTab = this.activeTabByProfile[lastActiveProfileId];
+                        if (profileActiveTab) {
+                            tabsToLoad.add(profileActiveTab);
+                        } else if (data.tabs.length > 0) {
+                            tabsToLoad.add(data.tabs[0].id);
+                        }
+                    }
+                    break;
+            }
+
+            console.log(`[SessionManager] Will load ${tabsToLoad.size} tabs immediately, ${data.tabs.length - tabsToLoad.size} will be lazy-loaded`);
+
+            // Register or create tabs based on whether they should be loaded
+            data.tabs.forEach((tabData: SessionTab) => {
+                const shouldLoad = tabsToLoad.has(tabData.id);
+
+                if (shouldLoad) {
+                    console.log(`[SessionManager] Creating tab ${tabData.id} with view (immediate load)`);
+                    const id = this.tabManager.createTab(tabData.profileId, tabData.url, tabData.id, tabData.faviconDataUrl);
+                    mainWindow.webContents.send('tab-created', {
+                        id,
+                        profileId: tabData.profileId,
+                        title: tabData.title || 'Restored',
+                        loaded: true,
+                        faviconDataUrl: tabData.faviconDataUrl
+                    });
+                } else {
+                    console.log(`[SessionManager] Registering tab ${tabData.id} as metadata (lazy)`);
+                    this.tabManager.registerTabMetadata({
+                        id: tabData.id,
+                        profileId: tabData.profileId,
+                        url: tabData.url,
+                        title: tabData.title || 'Restored',
+                        faviconDataUrl: tabData.faviconDataUrl
+                    });
+                    mainWindow.webContents.send('tab-created', {
+                        id: tabData.id,
+                        profileId: tabData.profileId,
+                        title: tabData.title || 'Restored',
+                        loaded: false,
+                        faviconDataUrl: tabData.faviconDataUrl
+                    });
+                }
+            });
+
+            // Log stats
+            const stats = this.tabManager.getLoadStats();
+            console.log(`[SessionManager] Tab stats: ${stats.loaded} loaded, ${stats.unloaded} unloaded, ${stats.total} total`);
+
+            // Load sidePanelByProfile into memory and push to TabManager
+            if (data.sidePanelByProfile) {
+                this.sidePanelByProfile = { ...data.sidePanelByProfile };
+                // Push all side panel states to TabManager so they're available for profile switches
+                this.tabManager.restoreAllSidePanelStates(data.sidePanelByProfile);
+            }
+
+            // Switch to the active tab
+            if (activeTabId && this.tabManager.tabs.has(activeTabId)) {
+                setTimeout(() => {
+                    this.tabManager.switchTo(activeTabId);
+                    mainWindow.webContents.send('restore-active', activeTabId);
+                    updateViewBounds();
+
+                    // Restore side panel for the active profile
+                    this.restoreSidePanelForProfile(lastActiveProfileId, mainWindow, updateViewBounds);
+                }, 500);
+            } else if (lastActiveProfileId) {
+                setTimeout(() => {
+                    const profileTabs = this.tabManager.getTabsForProfile(lastActiveProfileId);
+                    if (profileTabs.length > 0) {
+                        this.tabManager.switchTo(profileTabs[0].id);
+                        mainWindow.webContents.send('restore-active', profileTabs[0].id);
+                        updateViewBounds();
+
+                        // Restore side panel for the active profile
+                        this.restoreSidePanelForProfile(lastActiveProfileId, mainWindow, updateViewBounds);
+                    }
+                }, 500);
+            }
+        } catch (e) {
+            console.error('Failed to restore session:', e);
+        }
+    }
+
+    /**
+     * Restore side panel state for a specific profile
+     */
+    private restoreSidePanelForProfile(profileId: string | null, mainWindow: BrowserWindow, updateViewBounds: () => void): void {
+        if (!profileId) return;
+
+        const panelState = this.sidePanelByProfile[profileId];
+        if (panelState && panelState.pinnedTabId) {
+            // Verify the pinned tab exists
+            if (this.tabManager.tabs.has(panelState.pinnedTabId)) {
+                console.log(`[SessionManager] Restoring side panel for profile ${profileId}, pinned tab: ${panelState.pinnedTabId}`);
+
+                // Set the current profile ID on TabManager
+                this.tabManager.setCurrentProfileId(profileId);
+
+                // Set the panel state on TabManager for this profile
+                this.tabManager.setSidePanelState(panelState, profileId);
+
+                // Load the pinned tab if not loaded
+                if (!this.tabManager.isTabLoaded(panelState.pinnedTabId)) {
+                    this.tabManager.loadTab(panelState.pinnedTabId);
+                }
+
+                // Add the view to window
+                const pinnedView = this.tabManager.getPinnedView();
+                if (pinnedView) {
+                    mainWindow.contentView.addChildView(pinnedView);
+                }
+
+                // Notify frontend
+                mainWindow.webContents.send('side-panel-state-changed', panelState);
+
+                // Update bounds
+                setTimeout(() => updateViewBounds(), 100);
+            } else {
+                console.log(`[SessionManager] Pinned tab ${panelState.pinnedTabId} no longer exists, clearing panel state`);
+                delete this.sidePanelByProfile[profileId];
+            }
+        }
+    }
+
+    /**
+     * Load window state from session
+     */
+    loadWindowState(): Partial<WindowState> {
+        try {
+            if (fs.existsSync(this.getSessionFile())) {
+                const data = JSON.parse(fs.readFileSync(this.getSessionFile(), 'utf-8')) as Session;
+                if (data.windowBounds) {
+                    return {
+                        ...data.windowBounds,
+                        isMaximized: data.isMaximized || false
+                    };
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load window state:', e);
+        }
+        return {};
+    }
+
+    /**
+     * Get the last active tab for a specific profile
+     */
+    getLastActiveTabForProfile(profileId: string): string | null {
+        // First check in-memory map
+        if (this.activeTabByProfile[profileId]) {
+            return this.activeTabByProfile[profileId];
+        }
+
+        // Fall back to disk
+        try {
+            if (fs.existsSync(this.getSessionFile())) {
+                const data = JSON.parse(fs.readFileSync(this.getSessionFile(), 'utf-8')) as Session;
+                if (data.activeTabByProfile && data.activeTabByProfile[profileId]) {
+                    this.activeTabByProfile[profileId] = data.activeTabByProfile[profileId];
+                    return data.activeTabByProfile[profileId];
+                }
+            }
+        } catch (e) {
+            console.error('Failed to get last active tab for profile:', e);
+        }
+        return null;
+    }
+
+    /**
+     * Update the active tab for a profile
+     */
+    setActiveTabForProfile(profileId: string, tabId: string): void {
+        this.activeTabByProfile[profileId] = tabId;
+    }
+}
+
+export default SessionManager;

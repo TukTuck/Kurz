@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Search</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: transparent !important;
+            background-color: transparent !important;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            background: #3d2a5c;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+        }
+
+        .search-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 12px;
+        }
+
+        .engine-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 18px;
+            caret-color: #4285F4;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .hints {
+            display: flex;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+            align-items: center;
+        }
+
+        .hint-key {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .engines-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 16px 12px;
+            flex-wrap: wrap;
+        }
+
+        .engine-pill {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .engine-pill:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .engine-pill.active {
+            border: none;
+            background: #8b5cf6;
+            color: white;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="search-row">
+            <div class="engine-badge" id="engineBadge">G</div>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search Google..." autocomplete="off"
+                spellcheck="false" />
+            <div class="hints">
+                <span class="hint-key">TAB</span>
+                <span>cycle</span>
+                <span class="hint-key">ESC</span>
+                <span>close</span>
+            </div>
+        </div>
+        <div class="engines-row" id="enginesRow"></div>
+    </div>
+
+    <script>
+        const ENGINES = [
+            { id: 'google', name: 'Google', url: 'https://www.google.com/search?q=', color: '#4285F4' },
+            { id: 'perplexity', name: 'Perplexity', url: 'https://www.perplexity.ai/search?q=', color: '#20B2AA' },
+            { id: 'bing', name: 'Bing', url: 'https://www.bing.com/search?q=', color: '#00809D' },
+            { id: 'duckduckgo', name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=', color: '#DE5833' },
+            { id: 'brave', name: 'Brave', url: 'https://search.brave.com/search?q=', color: '#FB542B' },
+            { id: 'yahoo', name: 'Yahoo', url: 'https://search.yahoo.com/search?p=', color: '#6001D2' },
+        ];
+
+        let selectedIndex = 0;
+        let isUrlMode = false; // Track if current input looks like a URL
+        const input = document.getElementById('searchInput');
+        const badge = document.getElementById('engineBadge');
+        const enginesRow = document.getElementById('enginesRow');
+
+        // Render engine pills
+        function renderEngines() {
+            enginesRow.innerHTML = ENGINES.map((engine, idx) => `
+                <div class="engine-pill ${idx === selectedIndex ? 'active' : ''}" 
+                     data-index="${idx}"
+                     style="${idx === selectedIndex ? `background: ${engine.color}` : ''}">
+                    ${engine.name}
+                </div>
+            `).join('');
+
+            // Update badge
+            const current = ENGINES[selectedIndex];
+
+            // Only update badge if not in URL mode
+            if (!isUrlMode) {
+                badge.textContent = current.name[0];
+                badge.style.background = current.color;
+                input.placeholder = `Search ${current.name}...`;
+                input.style.caretColor = current.color;
+            }
+        }
+
+        // Update badge for URL mode
+        function setUrlMode(enabled) {
+            isUrlMode = enabled;
+            if (enabled) {
+                // Use inline SVG for globe icon
+                badge.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>';
+                badge.style.background = '#8b5cf6'; // violet
+                input.placeholder = 'Go to URL...';
+                input.style.caretColor = '#8b5cf6';
+            } else {
+                // Restore search engine mode
+                const current = ENGINES[selectedIndex];
+                badge.innerHTML = '';
+                badge.textContent = current.name[0];
+                badge.style.background = current.color;
+                input.placeholder = `Search ${current.name}...`;
+                input.style.caretColor = current.color;
+            }
+        }
+
+        // Handle pill clicks
+        enginesRow.addEventListener('click', (e) => {
+            const pill = e.target.closest('.engine-pill');
+            if (pill) {
+                selectedIndex = parseInt(pill.dataset.index);
+                renderEngines();
+                input.focus();
+            }
+        });
+
+        // =============================================================================
+        // URL Detection - detects if input looks like a URL vs search query
+        // =============================================================================
+
+        // Common TLDs for URL detection
+        const COMMON_TLDS = [
+            'com', 'org', 'net', 'io', 'dev', 'app', 'ai', 'co', 'me', 'info',
+            'biz', 'edu', 'gov', 'mil', 'int', 'xyz', 'online', 'site', 'tech',
+            'store', 'blog', 'cloud', 'page', 'live', 'tv', 'gg', 'to', 'in',
+            'uk', 'de', 'fr', 'jp', 'ph', 'au', 'ca', 'us', 'eu', 'asia'
+        ];
+
+        /**
+         * Detects if a string looks like a URL
+         * Returns the normalized URL if detected, or null if it's a search query
+         */
+        function detectUrl(input) {
+            const trimmed = input.trim();
+            if (!trimmed) return null;
+
+            // Rule 1: Explicit protocol (http:// or https://)
+            if (/^https?:\/\//i.test(trimmed)) {
+                return trimmed;
+            }
+
+            // Rule 2: Block file:// URLs (security - also blocked in TabManager)
+            if (/^file:\/\//i.test(trimmed)) {
+                return null; // Treat as search, TabManager will block anyway
+            }
+
+            // Rule 3: www. prefix
+            if (/^www\./i.test(trimmed)) {
+                return 'https://' + trimmed;
+            }
+
+            // Rule 4: localhost (with optional port)
+            if (/^localhost(:\d+)?(\/|$)/i.test(trimmed)) {
+                return 'http://' + trimmed;
+            }
+
+            // Rule 5: IP address (IPv4 with optional port)
+            if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?(\/|$)/.test(trimmed)) {
+                return 'http://' + trimmed;
+            }
+
+            // Rule 6: Has common TLD (e.g., example.com, site.io/path)
+            // Pattern: something.tld or something.tld/path or something.tld:port
+            const tldPattern = new RegExp(
+                `^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*\\.(${COMMON_TLDS.join('|')})(:\\d+)?(\\/.*)?$`,
+                'i'
+            );
+            if (tldPattern.test(trimmed) && !trimmed.includes(' ')) {
+                return 'https://' + trimmed;
+            }
+
+            // Everything else is a search query
+            return null;
+        }
+
+        // Keyboard handling
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                window.api?.send?.('quick-search-close');
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    selectedIndex = (selectedIndex - 1 + ENGINES.length) % ENGINES.length;
+                } else {
+                    selectedIndex = (selectedIndex + 1) % ENGINES.length;
+                }
+                renderEngines();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = input.value.trim();
+                if (query) {
+                    // Check if it's a URL first
+                    const detectedUrl = detectUrl(query);
+                    if (detectedUrl) {
+                        // Navigate directly to URL
+                        window.api?.send?.('quick-search-submit', detectedUrl);
+                    } else {
+                        // Use search engine
+                        const url = ENGINES[selectedIndex].url + encodeURIComponent(query);
+                        window.api?.send?.('quick-search-submit', url);
+                    }
+                }
+            }
+        });
+
+        // Focus input on window focus
+        if (window.api?.onQuickSearchFocus) {
+            window.api.onQuickSearchFocus(() => {
+                input.value = '';
+                setUrlMode(false); // Reset to search mode
+                input.focus();
+            });
+        }
+
+        // Detect URLs as user types
+        input.addEventListener('input', () => {
+            const value = input.value.trim();
+            if (value) {
+                const isUrl = detectUrl(value) !== null;
+                if (isUrl !== isUrlMode) {
+                    setUrlMode(isUrl);
+                }
+            } else {
+                // Empty input, reset to search mode
+                if (isUrlMode) {
+                    setUrlMode(false);
+                }
+            }
+        });
+
+        // Initial render
+        renderEngines();
+        input.focus();
+    </script>
+</body>
+
+</html>
