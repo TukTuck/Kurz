@@ -108,6 +108,15 @@ Fast navigation and web access:
 - Supports localhost, IP addresses, and common TLDs
 - Floating interface accessible anywhere
 
+### 🗂️ Open Tab Search (Ctrl+Shift+K)
+Jump straight to any open tab:
+- Search by tab title, URL or hostname
+- Best match ranked first (exact > prefix > word start > substring)
+- Highlighted matches inside each result
+- **↑ / ↓** to navigate, **Enter** to open, **Esc** to close
+- Marks the currently active tab
+- Works from anywhere in the app (application menu accelerator)
+
 ---
 
 ## System Integration
@@ -191,9 +200,25 @@ Full control over your experience:
 | `Ctrl+Shift+T` | Reopen closed tab |
 | `Ctrl+J` | Open downloads |
 | `Ctrl+K` | Quick Search |
+| `Ctrl+Shift+K` | Search open tabs |
 | `Ctrl+Shift+A` | Toggle always-on-top |
 
 *All shortcuts are customizable in Settings → Shortcuts*
+
+---
+
+## Development
+
+### 🧪 Tests
+Pure logic is covered by unit tests (Vitest, `npm test`):
+- Tab search ranking & highlighting (`src/lib/tabSearch.ts`)
+- Memory / byte formatting (`src/lib/format.ts`)
+- Shortcut presets & validation (`electron/ShortcutPresets.ts`)
+- Settings loading, merging and migrations (`electron/SettingsManager.ts`)
+- Ad-block whitelist matching (`electron/AdBlockManager.ts`)
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full architecture analysis
+and the list of fixed bugs.
 
 ---
 

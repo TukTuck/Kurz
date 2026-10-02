@@ -305,13 +305,14 @@ export function register(
             const metrics = app.getAppMetrics();
             const isWindows = process.platform === 'win32';
 
-            let totalKB = 0;
+            // `memory` is reported in bytes - accumulate raw bytes and convert once
+            let totalBytes = 0;
             for (const metric of metrics) {
-                const memKB = isWindows
+                const memBytes = isWindows
                     ? (metric.memory?.privateBytes || 0)
                     : (metric.memory?.workingSetSize || 0);
                 if (metric.type !== 'GPU') {
-                    totalKB += memKB;
+                    totalBytes += memBytes;
                 }
             }
 
@@ -322,7 +323,7 @@ export function register(
                 const pidToMemory: Record<number, number> = {};
                 for (const m of metrics) {
                     if (m.memory) {
-                        // Convert to MB for frontend display - use platform-appropriate metric
+                        // Bytes -> KB, matching the `memoryKB` field name used by the renderer
                         const memBytes = isWindows
                             ? (m.memory.privateBytes || 0)
                             : (m.memory.workingSetSize || 0);
@@ -353,7 +354,7 @@ export function register(
             }
 
             return {
-                totalKB: Math.round(totalKB / 1024), // Return as MB (named totalKB but value is MB for consistency)
+                totalKB: Math.round(totalBytes / 1024), // bytes -> KB (field name is accurate)
                 tabsMemory
             };
         } catch (e) {
@@ -407,7 +408,7 @@ export function register(
             const pidToMemory: Record<number, number> = {};
             for (const m of metrics) {
                 if (m.memory) {
-                    // Convert to MB for frontend display - use platform-appropriate metric
+                    // Bytes -> KB, matching the `memoryKB` field name used by the renderer
                     const memBytes = isWindows
                         ? (m.memory.privateBytes || 0)
                         : (m.memory.workingSetSize || 0);

@@ -207,7 +207,7 @@ export interface ElectronAPI {
     closeTabsToRight: (tabId: string, profileId: string) => void;
     reorderTabs: (newOrder: string[]) => void;
     getProfileTabs: (profileId: string) => Promise<{ tabs: TabInfo[]; lastActiveTabId: string | null }>;
-    getAllTabs: () => Promise<TabInfo[]>;
+    getAllTabs: () => Promise<{ tabs: TabInfo[]; activeTabId: string | null }>;
     onTabCreated: (callback: (tab: TabCreatedEvent) => void) => () => void;
     onTabUpdated: (callback: (update: TabUpdatedEvent) => void) => () => void;
     onTabClosedBackend: (callback: (tabId: string) => void) => () => void;
@@ -228,6 +228,7 @@ export interface ElectronAPI {
     onSettingsUpdated: (callback: (settings: Settings) => void) => () => void;
     onProfileDeleted: (callback: (profileId: string) => void) => () => void;
     onOpenSettingsModal: (callback: () => void) => () => void;
+    onOpenTabSearch: (callback: () => void) => () => void;
 
     // Navigation
     goBack: () => void;
@@ -294,6 +295,7 @@ export interface TabCreatedEvent {
     id: string;
     profileId: string;
     title: string;
+    url?: string;
     loaded?: boolean;
     faviconDataUrl?: string;
     afterTabId?: string; // For inserting new tab after its parent tab

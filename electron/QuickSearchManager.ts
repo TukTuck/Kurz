@@ -3,6 +3,10 @@ import * as path from 'path';
 
 const isDev = process.env.NODE_ENV === 'development';
 
+// Window dimensions - used both when creating and when repositioning the window
+const WINDOW_WIDTH = 700;
+const WINDOW_HEIGHT = 130;
+
 /**
  * Manages the Quick Search floating window
  */
@@ -40,8 +44,8 @@ class QuickSearchManager {
 
     private createWindow(): void {
         const mainBounds = this.mainWindow.getBounds();
-        const width = 700;  // ~10% bigger
-        const height = 130; // Exact fit for content
+        const width = WINDOW_WIDTH;
+        const height = WINDOW_HEIGHT;
 
         this.quickSearchWindow = new BrowserWindow({
             width,
@@ -106,8 +110,8 @@ class QuickSearchManager {
 
         // Reposition to center of main window
         const mainBounds = this.mainWindow.getBounds();
-        const width = 600;
-        const height = 120;
+        const width = WINDOW_WIDTH;
+        const height = WINDOW_HEIGHT;
         this.quickSearchWindow!.setBounds({
             x: mainBounds.x + Math.round((mainBounds.width - width) / 2),
             y: mainBounds.y + Math.round(mainBounds.height / 3),

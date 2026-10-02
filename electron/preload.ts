@@ -123,6 +123,11 @@ contextBridge.exposeInMainWorld('api', {
         ipcRenderer.on('open-settings-modal', handler);
         return () => ipcRenderer.removeListener('open-settings-modal', handler);
     },
+    onOpenTabSearch: (callback: () => void) => {
+        const handler = () => callback();
+        ipcRenderer.on('open-tab-search', handler);
+        return () => ipcRenderer.removeListener('open-tab-search', handler);
+    },
     onShowToast: (callback: (data: { message: string; type?: 'success' | 'error' | 'warning' | 'info' }) => void) => {
         const handler = (e: IpcRendererEvent, data: { message: string; type?: 'success' | 'error' | 'warning' | 'info' }) => callback(data);
         ipcRenderer.on('show-toast', handler);

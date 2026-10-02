@@ -83,10 +83,16 @@ Intelligent memory management inspired by Chrome's Memory Saver:
 ### Quick Search Overlay
 Fast navigation and command palette:
 - **Ctrl+K** to open anywhere
-- Search across all open tabs
-- Switch to any tab instantly
 - Search the web directly
+- URL detection - type `github.com` and go straight there
 - Floating interface accessible anywhere
+
+### Open Tab Search
+Jump to any open tab without hunting through the tab bar:
+- **Ctrl+Shift+K** to open anywhere
+- Search by tab title, URL or hostname (best match first)
+- Highlighted matches, ↑/↓ to navigate, Enter to open
+- Shows which tab is currently active
 
 ### Built-in Ad Blocking
 Privacy-first browsing powered by Ghostery's adblocker:
@@ -162,6 +168,9 @@ npm install
 
 # Start development server
 npm run dev
+
+# Run the test suite
+npm test
 ```
 
 ### Building for Production
@@ -212,6 +221,7 @@ MashAI stores its configuration in your user data directory:
 | `Ctrl+Shift+T` | Reopen closed tab |
 | `Ctrl+J` | Open downloads |
 | `Ctrl+K` | Quick Search |
+| `Ctrl+Shift+K` | Search open tabs |
 | `Ctrl+Shift+A` | Toggle always-on-top |
 
 *All shortcuts are customizable in Settings → Shortcuts*
@@ -228,6 +238,7 @@ MashAI stores its configuration in your user data directory:
 | **Vite** | Fast development and build tool |
 | **Tailwind CSS** | Utility-first styling |
 | **Ghostery Adblocker** | Privacy protection |
+| **Vitest** | Unit tests (`npm test`) |
 
 ### Architecture Highlights
 
@@ -259,10 +270,15 @@ MashAI/
 │   ├── App.tsx            # Main application component
 │   ├── components/        # UI components
 │   │   ├── TitleBar.tsx
+│   │   ├── TabSearchOverlay.tsx
 │   │   └── settings/      # Settings tab components
+│   ├── lib/               # Pure, unit-tested helpers (tab search, formatting)
 │   └── index.css          # Global styles (Tailwind)
 ├── tools/                 # Build utilities
 │   └── png_to_icns.py     # macOS icon generator
+├── docs/                  # Architecture & code analysis
+│   └── ARCHITECTURE.md
+├── vitest.config.ts       # Unit test configuration
 └── dist/                  # Production build output
 ```
 

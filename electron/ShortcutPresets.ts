@@ -108,11 +108,16 @@ export function isValidShortcut(shortcut: string): boolean {
         'Alt', 'Option', 'AltGr', 'Shift', 'Super', 'Meta'
     ];
 
-    // Valid key codes include letters, numbers, F-keys, and special keys
-    const validKeys = /^[A-Za-z0-9]$|^F\d{1,2}$|^(Plus|Space|Tab|Capslock|Numlock|Scrolllock|Backspace|Delete|Insert|Return|Enter|Up|Down|Left|Right|Home|End|PageUp|PageDown|Escape|Esc|VolumeUp|VolumeDown|VolumeMute|MediaNextTrack|MediaPreviousTrack|MediaStop|MediaPlayPause|PrintScreen)$/;
+    // Valid key codes include letters, numbers, F-keys, and special keys.
+    // Electron only supports F1-F12, so F13 and above must be rejected.
+    const validKeys = /^[A-Za-z0-9]$|^F([1-9]|1[0-2])$|^(Plus|Space|Tab|Capslock|Numlock|Scrolllock|Backspace|Delete|Insert|Return|Enter|Up|Down|Left|Right|Home|End|PageUp|PageDown|Escape|Esc|VolumeUp|VolumeDown|VolumeMute|MediaNextTrack|MediaPreviousTrack|MediaStop|MediaPlayPause|PrintScreen)$/;
+
+    // Keys that are valid accelerators on their own, without any modifier.
+    // This is what makes the Brave preset ("F5" / "Shift+F5") saveable.
+    const bareKeyAllowed = /^(F([1-9]|1[0-2])|Plus|Space|Tab|Backspace|Delete|Insert|Return|Enter|Up|Down|Left|Right|Home|End|PageUp|PageDown|Escape|Esc|VolumeUp|VolumeDown|VolumeMute|MediaNextTrack|MediaPreviousTrack|MediaStop|MediaPlayPause|PrintScreen)$/i;
 
     const parts = shortcut.split('+');
-    if (parts.length < 2) return false; // Need at least modifier + key
+    if (parts.length < 2) return bareKeyAllowed.test(parts[0]); // Bare key: F-keys/special keys only
 
     const key = parts[parts.length - 1];
     const modifiers = parts.slice(0, -1);

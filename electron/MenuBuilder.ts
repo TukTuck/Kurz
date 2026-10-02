@@ -470,8 +470,9 @@ class MenuBuilder {
                             if (!activeTab) return;
 
                             const activeProfileId = activeTab.profileId;
-                            const profileTabs = Array.from(this.tabManager.tabs.values())
-                                .filter(tab => tab.profileId === activeProfileId);
+                            // Use the ordered accessor: Map insertion order does NOT
+                            // reflect the tab order after drag & drop reordering.
+                            const profileTabs = this.tabManager.getTabsForProfile(activeProfileId);
 
                             if (profileTabs.length <= 1) return;
 
@@ -494,8 +495,9 @@ class MenuBuilder {
                             if (!activeTab) return;
 
                             const activeProfileId = activeTab.profileId;
-                            const profileTabs = Array.from(this.tabManager.tabs.values())
-                                .filter(tab => tab.profileId === activeProfileId);
+                            // Use the ordered accessor: Map insertion order does NOT
+                            // reflect the tab order after drag & drop reordering.
+                            const profileTabs = this.tabManager.getTabsForProfile(activeProfileId);
 
                             if (profileTabs.length <= 1) return;
 
@@ -576,6 +578,14 @@ class MenuBuilder {
                             if (this.toggleQuickSearch) {
                                 this.toggleQuickSearch();
                             }
+                        }
+                    },
+                    {
+                        label: 'Search Open Tabs',
+                        accelerator: 'CmdOrCtrl+Shift+K',
+                        click: () => {
+                            // Opens the in-app tab search palette in the renderer
+                            this.mainWindow.webContents.send('open-tab-search');
                         }
                     }
                 ]
