@@ -11,58 +11,143 @@
 @tailwind components;
 @tailwind utilities;
 
+/* TISCH Design - Vergilbtes Karopapier */
 body {
     margin: 0;
     padding: 0;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
+    background-color: #F2EAD3;
+    color: #2B2B28;
 }
 
 * {
     box-sizing: border-box;
 }
 
-/* Hide scrollbar structure */
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
+/* Karopapier-Pattern als Hintergrund */
+.paper-grid {
+    background-color: #F2EAD3;
+    background-image: 
+        linear-gradient(to right, #D4C5A9 1px, transparent 1px),
+        linear-gradient(to bottom, #D4C5A9 1px, transparent 1px);
+    background-size: 24px 24px;
 }
 
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
+/* Karten-Stil für TISCH */
+.tisch-card {
+    background-color: #FFFBF0;
+    border: 1px solid #D4C5A9;
+    box-shadow: 
+        0 2px 4px rgba(43, 43, 40, 0.1),
+        0 4px 8px rgba(43, 43, 40, 0.05);
+    transition: all 0.2s ease;
 }
 
-/* Modern scrollbar styling - Enhanced visibility */
+.tisch-card:hover {
+    box-shadow: 
+        0 4px 8px rgba(43, 43, 40, 0.15),
+        0 8px 16px rgba(43, 43, 40, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Sidebar-Stil */
+.tisch-sidebar {
+    background-color: #E8DCC4;
+    border-right: 1px solid #D4C5A9;
+}
+
+/* Topbar-Stil */
+.tisch-topbar {
+    background-color: #E8DCC4;
+    border-bottom: 1px solid #D4C5A9;
+}
+
+/* Schwebende Leiste */
+.tisch-floating-bar {
+    background-color: rgba(232, 220, 196, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid #D4C5A9;
+    box-shadow: 0 4px 12px rgba(43, 43, 40, 0.15);
+}
+
+/* Buttons im TISCH-Design */
+.tisch-button {
+    background-color: #FFFBF0;
+    border: 1px solid #D4C5A9;
+    color: #2B2B28;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: all 0.15s ease;
+}
+
+.tisch-button:hover {
+    background-color: #F2EAD3;
+    border-color: #8B5CF6;
+}
+
+.tisch-button-primary {
+    background-color: #8B5CF6;
+    border: 1px solid #7C3AED;
+    color: white;
+}
+
+.tisch-button-primary:hover {
+    background-color: #7C3AED;
+}
+
+.tisch-button-danger {
+    background-color: #C4453B;
+    border: 1px solid #A3382F;
+    color: white;
+}
+
+.tisch-button-danger:hover {
+    background-color: #A3382F;
+}
+
+/* Inputs im TISCH-Design */
+.tisch-input {
+    background-color: #FFFBF0;
+    border: 1px solid #D4C5A9;
+    color: #2B2B28;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.tisch-input:focus {
+    outline: none;
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+/* Scrollbar im TISCH-Design */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 5px;
+    background: #E8DCC4;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #52525b;
+    background: #D4C5A9;
     border-radius: 5px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
+    border: 2px solid #E8DCC4;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #71717a;
-    border: 2px solid transparent;
-    background-clip: padding-box;
+    background: #C4B599;
 }
 
 /* Firefox scrollbar */
 * {
     scrollbar-width: thin;
-    scrollbar-color: #52525b rgba(255, 255, 255, 0.03);
+    scrollbar-color: #D4C5A9 #E8DCC4;
 }
 
 /* Remove color input border */

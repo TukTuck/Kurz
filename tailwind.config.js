@@ -7,10 +7,25 @@ export default {
     theme: {
         extend: {
             colors: {
-                'editor-bg': '#18181b',
-                'editor-hover': '#2a2a2a',
-                'tab-active': '#18181b',
-                'tab-inactive': '#27272a',
+                // TISCH Design - Vergilbtes Karopapier
+                'paper': '#F2EAD3',
+                'paper-dark': '#E8DCC4',
+                'ink': '#2B2B28',
+                'ink-light': '#4A4A47',
+                'accent-red': '#C4453B',
+                'accent-purple': '#8B5CF6',
+                'grid-line': '#D4C5A9',
+                
+                // Legacy (für Migration)
+                'editor-bg': '#F2EAD3',
+                'editor-hover': '#E8DCC4',
+                'tab-active': '#F2EAD3',
+                'tab-inactive': '#E8DCC4',
+            },
+            fontFamily: {
+                'sans': ['Inter', 'system-ui', 'sans-serif'],
+                'mono': ['JetBrains Mono', 'Courier New', 'monospace'],
+                'handwriting': ['Caveat', 'cursive'],
             },
             animation: {
                 'slide-up': 'slideUp 0.3s ease-out forwards',

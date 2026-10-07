@@ -1,591 +1,172 @@
-import { useState, useEffect, useRef } from 'react'
-import TitleBar from './components/TitleBar'
-import TabSearchOverlay from './components/TabSearchOverlay'
-import type { Profile, AIProvider, Settings, TabCreatedEvent, TabUpdatedEvent, ProfileTabsLoadedEvent, TabMemoryInfo, SidePanelState } from './types'
-
-interface TabState {
-    id: string;
-    profileId: string;
-    url: string;
-    title: string;
-    loaded: boolean;
-    suspended?: boolean;
-    loading?: boolean;
-    faviconDataUrl?: string;
-    parentTabId?: string; // The tab that opened this one (for returning on close)
-    isMediaPlaying?: boolean;
-    isAudible?: boolean;
-}
+import { useState, useEffect } from 'react'
+import type { Profile, TabInfo } from './types'
 
 function App() {
     const [profiles, setProfiles] = useState<Profile[]>([])
-    const [tabs, setTabs] = useState<TabState[]>([])
-    const [activeProfileId, setActiveProfileId] = useState<string>(() => {
-        return localStorage.getItem('lastActiveProfileId') || 'work'
-    })
+    const [tabs, setTabs] = useState<TabInfo[]>([])
+    const [activeProfileId, setActiveProfileId] = useState<string>('work')
     const [activeTabId, setActiveTabId] = useState<string | null>(null)
-
-    const [aiProviders, setAiProviders] = useState<AIProvider[]>([])
-    const [defaultProviderId, setDefaultProviderId] = useState<string>('perplexity')
-    const [tabMemory, setTabMemory] = useState<Record<string, TabMemoryInfo>>({})
-    const [toastMessage, setToastMessage] = useState<string>('')
-    const [showToast, setShowToast] = useState<boolean>(false)
-    const [toastType, setToastType] = useState<'success' | 'error' | 'warning' | 'info'>('success')
-    const [sidePanelState, setSidePanelState] = useState<SidePanelState | null>(null)
-    const [isPanelPulsing, setIsPanelPulsing] = useState<boolean>(false)
-    const [isTabSearchOpen, setIsTabSearchOpen] = useState<boolean>(false)
-
-    const closeTabRef = useRef<((tabId: string) => void) | null>(null)
 
     useEffect(() => {
         if (!window.api) {
-            console.error('window.api is undefined - preload script failed to load!')
+            console.error('window.api is undefined')
             return
         }
 
-        const loadInitialData = async () => {
+        const loadData = async () => {
             try {
-                const settings: Settings = await window.api.getSettings();
-                if (settings) {
-                    if (settings.aiProviders) setAiProviders(settings.aiProviders);
-                    if (settings.defaultProviderId) setDefaultProviderId(settings.defaultProviderId);
-                }
-
-                // The main process answers with { tabs, activeTabId } - treating the
-                // response as an array made this whole block dead code.
-                const { tabs: existingTabs, activeTabId: backendActiveTabId } = await window.api.getAllTabs();
-                if (existingTabs && existingTabs.length > 0) {
-                    setTabs(existingTabs);
-                    const firstTab = existingTabs.find(t => t.id === backendActiveTabId) || existingTabs[0];
-                    if (firstTab) {
-                        setActiveTabId(firstTab.id);
-                        if (firstTab.profileId) {
-                            setActiveProfileId(firstTab.profileId);
-                            localStorage.setItem('lastActiveProfileId', firstTab.profileId);
-                        }
-                    }
+                const { tabs: loadedTabs, activeTabId: loadedActiveId } = await window.api.getAllTabs()
+                if (loadedTabs) {
+                    setTabs(loadedTabs)
+                    setActiveTabId(loadedActiveId)
                 }
             } catch (err) {
-                console.error('Failed to load settings:', err);
-            }
-        }
-        loadInitialData();
-
-        const handleProfilesLoaded = (profileList: Profile[]) => {
-            console.log('App: Profiles loaded', profileList)
-            setProfiles(profileList)
-        }
-
-        const handleTabCreated = (tab: TabCreatedEvent) => {
-            console.log('App: Tab created', tab)
-            setTabs(prev => {
-                if (prev.some(t => t.id === tab.id)) {
-                    return prev
-                }
-
-                // Store afterTabId as parentTabId so we can return to it when closing
-                const newTab = {
-                    ...tab,
-                    url: tab.url ?? '',
-                    loaded: tab.loaded ?? false,
-                    faviconDataUrl: tab.faviconDataUrl,
-                    loading: tab.loaded ?? false,
-                    parentTabId: tab.afterTabId // Track parent for return-on-close
-                };
-
-                // If afterTabId is provided, insert after that tab
-                if (tab.afterTabId) {
-                    const afterIndex = prev.findIndex(t => t.id === tab.afterTabId);
-                    if (afterIndex !== -1) {
-                        const newTabs = [...prev];
-                        newTabs.splice(afterIndex + 1, 0, newTab);
-                        return newTabs;
-                    }
-                }
-
-                // Default: append to end
-                return [...prev, newTab]
-            })
-            // Only switch to the new tab if it's not a background tab
-            if (!tab.background) {
-                setActiveTabId(tab.id)
+                console.error('Failed to load tabs:', err)
             }
         }
 
-        const handleTabUpdated = ({ id, title, url, loaded, suspended, faviconDataUrl, isLoading, isMediaPlaying, isAudible }: TabUpdatedEvent) => {
-            setTabs(prev => prev.map(tab =>
-                tab.id === id ? {
-                    ...tab,
-                    ...(title !== undefined && { title }),
-                    ...(url !== undefined && { url }),
-                    ...(loaded !== undefined && { loaded }),
-                    ...(suspended !== undefined && { suspended }),
-                    ...(faviconDataUrl !== undefined && { faviconDataUrl }),
-                    ...(isLoading !== undefined && { loading: isLoading }),
-                    ...(isMediaPlaying !== undefined && { isMediaPlaying }),
-                    ...(isAudible !== undefined && { isAudible })
-                } : tab
-            ))
-        }
+        loadData()
 
-        const handleTabLoading = ({ id }: { id: string }) => {
-            setTabs(prev => prev.map(tab =>
-                tab.id === id ? { ...tab, loading: true } : tab
-            ))
-        }
-
-        const handleRestoreActive = (tabId: string) => {
-            setActiveTabId(tabId)
-            setTabs(prev => {
-                const restoredTab = prev.find(t => t.id === tabId);
-                if (restoredTab && restoredTab.profileId) {
-                    setActiveProfileId(restoredTab.profileId);
-                    localStorage.setItem('lastActiveProfileId', restoredTab.profileId);
-                }
-                return prev;
-            })
-        }
-
-        const handleProfileTabsLoaded = ({ profileId, tabs: loadedTabs, lastActiveTabId }: ProfileTabsLoadedEvent) => {
-            console.log('Profile tabs loaded for', profileId, 'count:', loadedTabs.length)
-            setTabs(loadedTabs)
-            if (loadedTabs.length > 0) {
-                const tabToActivate = lastActiveTabId || loadedTabs[0].id
-                setActiveTabId(tabToActivate)
-                window.api.switchTab(tabToActivate)
-            } else {
-                window.api.createTab(profileId)
-            }
-        }
-
-        const cleanupProfilesLoaded = window.api.onProfilesLoaded(handleProfilesLoaded)
-        const cleanupTabCreated = window.api.onTabCreated(handleTabCreated)
-        const cleanupTabUpdated = window.api.onTabUpdated(handleTabUpdated)
-        const cleanupTabLoading = window.api.onTabLoading ? window.api.onTabLoading(handleTabLoading) : null
-        const cleanupRestoreActive = window.api.onRestoreActive(handleRestoreActive)
-        const cleanupProfileTabsLoaded = window.api.onProfileTabsLoaded(handleProfileTabsLoaded)
-
-        const cleanupSwitchProfileRequest = window.api.onSwitchProfileRequest((id: string) => {
-            switchProfile(id)
+        const cleanupProfiles = window.api.onProfilesLoaded((loadedProfiles) => {
+            setProfiles(loadedProfiles)
         })
-
-        const cleanupRequestCloseTab = window.api.onRequestCloseTab((tabId: string) => {
-            if (closeTabRef.current) {
-                closeTabRef.current(tabId)
-            }
-        })
-
-        const cleanupTabClosedBackend = window.api.onTabClosedBackend((tabId: string) => {
-            setTabs(prev => prev.filter(tab => tab.id !== tabId))
-        })
-
-        const cleanupOpenTabSearch = window.api.onOpenTabSearch?.(() => {
-            setIsTabSearchOpen(true)
-            // Detach the web content so the palette is not covered by it
-            window.api.hideWebView?.()
-        })
-
-        const cleanupSettingsUpdated = window.api.onSettingsUpdated((newSettings: Settings) => {
-            console.log('App: Settings updated', newSettings)
-            if (newSettings.profiles) {
-                setProfiles(newSettings.profiles)
-            }
-            if (newSettings.aiProviders) {
-                setAiProviders(newSettings.aiProviders)
-            }
-            if (newSettings.defaultProviderId) {
-                setDefaultProviderId(newSettings.defaultProviderId)
-            }
-        })
-
-        const cleanupShowToast = window.api.onShowToast?.((data) => {
-            setToastMessage(data.message)
-            setToastType(data.type || 'success')
-            setShowToast(true)
-        })
-
-        // Side panel state listener
-        const cleanupSidePanel = window.api.onSidePanelStateChanged?.((state) => {
-            console.log('App: Side panel state changed', state)
-            setSidePanelState(state)
-        })
-
-        // Listen for pulse-side-panel to trigger visual feedback
-        const cleanupPulse = window.api.onPulseSidePanel?.(() => {
-            setIsPanelPulsing(true);
-            setTimeout(() => setIsPanelPulsing(false), 500);
-        });
 
         return () => {
-            console.log('Cleaning up listeners')
-            if (cleanupProfilesLoaded) cleanupProfilesLoaded()
-            if (cleanupTabCreated) cleanupTabCreated()
-            if (cleanupTabUpdated) cleanupTabUpdated()
-            if (cleanupTabLoading) cleanupTabLoading()
-            if (cleanupRestoreActive) cleanupRestoreActive()
-            if (cleanupProfileTabsLoaded) cleanupProfileTabsLoaded()
-            if (cleanupSwitchProfileRequest) cleanupSwitchProfileRequest()
-            if (cleanupRequestCloseTab) cleanupRequestCloseTab()
-            if (cleanupTabClosedBackend) cleanupTabClosedBackend()
-            if (cleanupSettingsUpdated) cleanupSettingsUpdated()
-            if (cleanupShowToast) cleanupShowToast()
-            if (cleanupOpenTabSearch) cleanupOpenTabSearch()
-            if (cleanupSidePanel) cleanupSidePanel()
-            if (cleanupPulse) cleanupPulse()
+            cleanupProfiles()
         }
     }, [])
-
-    useEffect(() => {
-        const fetchTabMemory = async () => {
-            if (window.api?.getAllTabsMemory) {
-                try {
-                    const memory = await window.api.getAllTabsMemory()
-                    const memoryMap: Record<string, TabMemoryInfo> = {}
-                    if (Array.isArray(memory)) {
-                        memory.forEach((m) => { memoryMap[m.tabId] = m })
-                    }
-                    setTabMemory(memoryMap)
-                } catch (e) {
-                    // API not ready yet
-                }
-            }
-        }
-        fetchTabMemory()
-        const interval = setInterval(fetchTabMemory, 10000)
-        return () => clearInterval(interval)
-    }, [])
-
-    const createTab = () => {
-        window.api.createTab(activeProfileId)
-    }
-
-    const createTabWithUrl = (profileId: string, url: string) => {
-        window.api.createTabWithUrl(profileId, url)
-    }
-
-    const switchTab = (tabId: string) => {
-        const targetTab = tabs.find(t => t.id === tabId);
-
-        // The tab search can surface tabs from other profiles. The profile has to be
-        // switched BEFORE the tab, otherwise the backend derives the "previous"
-        // profile from the tab we are about to activate and skips the switch
-        // (which would leave the wrong side panel / suspension state behind).
-        if (targetTab?.profileId && targetTab.profileId !== activeProfileId) {
-            window.api.switchProfile(targetTab.profileId);
-            setActiveProfileId(targetTab.profileId);
-            localStorage.setItem('lastActiveProfileId', targetTab.profileId);
-        }
-
-        setActiveTabId(tabId)
-        window.api.switchTab(tabId)
-    }
-
-    const closeTab = (tabId: string) => {
-        const activeProfileTabs = tabs.filter(t => t.profileId === activeProfileId)
-        if (activeProfileTabs.length <= 1) {
-            return
-        }
-
-        // Find the tab being closed to get its parent
-        const closingTab = activeProfileTabs.find(t => t.id === tabId)
-        // Find the index of the tab being closed BEFORE closing it
-        const closingTabIndex = activeProfileTabs.findIndex(t => t.id === tabId)
-
-        window.api.closeTab(tabId)
-        setTabs(prev => {
-            const filtered = prev.filter(tab => tab.id !== tabId)
-
-            if (tabId === activeTabId && filtered.length > 0) {
-                const currentProfileFiltered = filtered.filter(t => t.profileId === activeProfileId)
-
-                if (currentProfileFiltered.length > 0) {
-                    let newActiveTab;
-
-                    // If the closed tab has a parent, return to it (if it still exists)
-                    if (closingTab?.parentTabId) {
-                        const parentTab = currentProfileFiltered.find(t => t.id === closingTab.parentTabId)
-                        if (parentTab) {
-                            newActiveTab = parentTab
-                        }
-                    }
-
-                    // Fallback: if no parent or parent doesn't exist, use default behavior
-                    if (!newActiveTab) {
-                        if (closingTabIndex >= currentProfileFiltered.length) {
-                            // Closed the last tab, go to previous (now the new last)
-                            newActiveTab = currentProfileFiltered[currentProfileFiltered.length - 1]
-                        } else {
-                            // Go to the tab that's now at the same position (next tab moved up)
-                            newActiveTab = currentProfileFiltered[closingTabIndex]
-                        }
-                    }
-
-                    setActiveTabId(newActiveTab.id)
-                    window.api.switchTab(newActiveTab.id)
-                }
-            } else if (filtered.length === 0) {
-                setActiveTabId(null)
-            }
-
-            return filtered
-        })
-    }
-
-    useEffect(() => {
-        closeTabRef.current = closeTab
-    }, [tabs, activeTabId, activeProfileId])
-
-    const duplicateTab = (tabId: string) => {
-        window.api.duplicateTab(tabId)
-    }
-
-    const reloadTab = (tabId: string) => {
-        window.api.reloadTab(tabId)
-    }
-
-    const reopenClosedTab = () => {
-        window.api.reopenClosedTab()
-    }
-
-    const closeOtherTabs = (tabId: string) => {
-        window.api.closeOtherTabs(tabId, activeProfileId)
-        setTabs(prev => prev.filter(tab => tab.id === tabId))
-    }
-
-    const closeTabsToRight = (tabId: string) => {
-        window.api.closeTabsToRight(tabId, activeProfileId)
-        setTabs(prev => {
-            const index = prev.findIndex(t => t.id === tabId)
-            return prev.slice(0, index + 1)
-        })
-    }
-
-    const switchProfile = (profileId: string) => {
-        window.api.switchProfile(profileId)
-        setActiveProfileId(profileId)
-        localStorage.setItem('lastActiveProfileId', profileId)
-        window.api.getProfileTabs(profileId)
-    }
-
-    const reorderTabs = (fromIndex: number, toIndex: number) => {
-        const profileTabs = tabs.filter(t => t.profileId === activeProfileId);
-
-        if (fromIndex < 0 || fromIndex >= profileTabs.length ||
-            toIndex < 0 || toIndex >= profileTabs.length) {
-            return;
-        }
-
-        const movedTabId = profileTabs[fromIndex].id;
-        const targetTabId = profileTabs[toIndex].id;
-
-        setTabs(prev => {
-            const newTabs = [...prev];
-            const actualFromIndex = newTabs.findIndex(t => t.id === movedTabId);
-            const actualToIndex = newTabs.findIndex(t => t.id === targetTabId);
-
-            if (actualFromIndex === -1 || actualToIndex === -1) return prev;
-
-            const [movedTab] = newTabs.splice(actualFromIndex, 1);
-            const newTargetIndex = newTabs.findIndex(t => t.id === targetTabId);
-            if (newTargetIndex === -1) {
-                newTabs.push(movedTab);
-            } else {
-                newTabs.splice(actualFromIndex < actualToIndex ? newTargetIndex + 1 : newTargetIndex, 0, movedTab);
-            }
-
-            const tabOrder = newTabs.map(t => t.id);
-            window.api.reorderTabs(tabOrder);
-
-            return newTabs;
-        });
-    }
 
     const currentTabs = tabs.filter(t => t.profileId === activeProfileId)
+    const activeTab = tabs.find(t => t.id === activeTabId)
+
+    const switchProfile = (profileId: string) => {
+        setActiveProfileId(profileId)
+        const profileTabs = tabs.filter(t => t.profileId === profileId)
+        if (profileTabs.length > 0) {
+            setActiveTabId(profileTabs[0].id)
+        } else {
+            setActiveTabId(null)
+        }
+    }
 
     return (
-        <div className="h-screen w-screen bg-editor-bg flex flex-col overflow-hidden">
-            <TitleBar
-                profiles={profiles}
-                activeProfile={profiles.find(p => p.id === activeProfileId)}
-                tabs={currentTabs}
-                activeTabId={activeTabId}
-                tabMemory={tabMemory}
-                onCreateTab={createTab}
-                onCreateTabWithUrl={createTabWithUrl}
-                onSwitchTab={switchTab}
-                onCloseTab={closeTab}
-                onDuplicateTab={duplicateTab}
-                onReloadTab={reloadTab}
-                onCloseOtherTabs={closeOtherTabs}
-                onCloseTabsToRight={closeTabsToRight}
-                onSwitchProfile={switchProfile}
-                onReorderTabs={reorderTabs}
-                aiProviders={aiProviders}
-                toastMessage={toastMessage}
-                showToast={showToast}
-                toastType={toastType}
-                onCloseToast={() => setShowToast(false)}
-                sidePanelState={sidePanelState}
-            />
-
-            {/* Draggable Divider for Side Panel */}
-            {sidePanelState && (
-                <div
-                    className="absolute z-50 cursor-col-resize group"
-                    style={{
-                        top: '36px',
-                        bottom: 0,
-                        // Position divider at the edge between main and panel
-                        left: sidePanelState.panelSide === 'right'
-                            ? `${100 - sidePanelState.panelWidth}%`
-                            : `${sidePanelState.panelWidth}%`,
-                        width: '8px',
-                        transform: 'translateX(-50%)'
-                    }}
-                    onMouseDown={(e) => {
-                        e.preventDefault();
-                        const startX = e.clientX;
-                        const startPosition = sidePanelState.panelWidth;
-                        const windowWidth = window.innerWidth;
-                        const isRight = sidePanelState.panelSide === 'right';
-
-                        const handleMouseMove = (moveEvent: MouseEvent) => {
-                            const deltaX = moveEvent.clientX - startX;
-                            const deltaPercent = (deltaX / windowWidth) * 100;
-                            // When panel is on right: dragging left (negative delta) = larger panel
-                            // When panel is on left: dragging right (positive delta) = larger panel
-                            const newPosition = isRight
-                                ? Math.max(20, Math.min(80, startPosition - deltaPercent))
-                                : Math.max(20, Math.min(80, startPosition + deltaPercent));
-                            window.api.setPanelWidth(newPosition);
-                        };
-
-                        const handleMouseUp = () => {
-                            document.removeEventListener('mousemove', handleMouseMove);
-                            document.removeEventListener('mouseup', handleMouseUp);
-                            document.body.style.cursor = '';
-                            document.body.style.userSelect = '';
-                        };
-
-                        document.addEventListener('mousemove', handleMouseMove);
-                        document.addEventListener('mouseup', handleMouseUp);
-                        document.body.style.cursor = 'col-resize';
-                        document.body.style.userSelect = 'none';
-                    }}
-                >
-                    {/* Visual handle with faded gradient effect - fades at top and bottom */}
-                    <div
-                        className={`absolute inset-y-0 left-1/2 -translate-x-1/2 transition-all duration-300
-                            ${isPanelPulsing
-                                ? 'w-2 shadow-[0_0_20px_5px_rgba(139,92,246,0.7)]'
-                                : 'w-1 group-hover:bg-violet-500'
-                            }`}
-                        style={{
-                            background: isPanelPulsing
-                                ? 'linear-gradient(to bottom, rgba(139,92,246,0), rgba(139,92,246,0.9) 20%, rgba(139,92,246,0.9) 80%, rgba(139,92,246,0))'
-                                : 'linear-gradient(to bottom, rgba(58,58,59,0), rgba(58,58,59,1) 20%, rgba(58,58,59,1) 80%, rgba(58,58,59,0))'
-                        }}
-                    />
+        <div className="h-screen w-screen bg-paper flex flex-col overflow-hidden">
+            {/* Topbar */}
+            <div className="tisch-topbar h-12 flex items-center px-4 gap-4">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-accent-purple rounded flex items-center justify-center text-white font-bold text-sm">
+                        T
+                    </div>
+                    <span className="font-semibold text-ink">TISCH</span>
                 </div>
-            )}
+                
+                <div className="h-6 w-px bg-grid-line" />
+                
+                <button className="tisch-button text-xs">
+                    + Neue Karte
+                </button>
+                
+                <div className="flex-1" />
+                
+                <div className="text-xs text-ink-light">
+                    {profiles.length} Profile · {tabs.length} Karten
+                </div>
+            </div>
 
-            {/* Side panel top glow bar when clicking pinned tab */}
-            {sidePanelState && isPanelPulsing && (
-                <div
-                    className="absolute h-2 pointer-events-none z-[9999] animate-pulse"
-                    style={{
-                        top: '36px',
-                        left: sidePanelState.panelSide === 'left' ? 0 : `${100 - sidePanelState.panelWidth}%`,
-                        right: sidePanelState.panelSide === 'right' ? 0 : `${100 - sidePanelState.panelWidth}%`,
-                        background: 'linear-gradient(to right, rgba(139,92,246,0), rgba(139,92,246,0.9) 20%, rgba(139,92,246,0.9) 80%, rgba(139,92,246,0))',
-                        boxShadow: '0 0 30px 8px rgba(139, 92, 246, 0.6)'
-                    }}
-                />
-            )}
-            {/* Empty state when pinned tab is the only/active tab */}
-            {sidePanelState && activeTabId === sidePanelState.pinnedTabId && (
-                <div
-                    className="absolute flex flex-col items-center justify-center bg-[#1a1a1b] text-zinc-400"
-                    style={{
-                        top: '36px',
-                        bottom: 0,
-                        left: sidePanelState.panelSide === 'left' ? `${sidePanelState.panelWidth}%` : 0,
-                        right: sidePanelState.panelSide === 'right' ? `${sidePanelState.panelWidth}%` : 0,
-                    }}
-                >
-                    {/* Browser Window Icon */}
-                    <svg
-                        className="w-12 h-12 mb-3 text-zinc-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M3.75 6A2.25 2.25 0 016 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6zM3.75 9h16.5"
-                        />
-                    </svg>
-                    <p className="text-lg font-medium mb-1">No active tab</p>
-                    <p className="text-sm text-zinc-500 mb-6">Choose an AI to start browsing</p>
-
-                    {/* AI Providers Grid */}
-                    <div className="grid grid-cols-4 gap-3 max-w-md px-4">
-                        {aiProviders.map(provider => (
-                            <button
-                                key={provider.id}
-                                onClick={() => createTabWithUrl(activeProfileId, provider.url)}
-                                className={`flex flex-col items-center p-3 rounded-lg transition-all duration-200 hover:scale-105
-                                    ${provider.id === defaultProviderId
-                                        ? 'bg-violet-600/20 border border-violet-500/50 hover:bg-violet-600/30'
-                                        : 'bg-[#2a2a2b] hover:bg-[#3a3a3b] border border-transparent'
+            <div className="flex flex-1 overflow-hidden">
+                {/* Sidebar links */}
+                <div className="tisch-sidebar w-64 flex flex-col overflow-hidden">
+                    <div className="p-4 border-b border-grid-line">
+                        <h2 className="text-xs font-semibold text-ink-light uppercase tracking-wide mb-3">
+                            Profile
+                        </h2>
+                        <div className="space-y-1">
+                            {profiles.map(profile => (
+                                <button
+                                    key={profile.id}
+                                    onClick={() => switchProfile(profile.id)}
+                                    className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                                        profile.id === activeProfileId
+                                            ? 'bg-paper text-ink font-medium'
+                                            : 'text-ink-light hover:bg-paper/50'
                                     }`}
-                                title={provider.name}
-                            >
-                                <img
-                                    src={provider.faviconDataUrl || `https://www.google.com/s2/favicons?domain=${new URL(provider.url).hostname}&sz=32`}
-                                    alt={provider.name}
-                                    className="w-8 h-8 mb-2 rounded"
-                                    onError={(e) => {
-                                        e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23888" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>';
-                                    }}
-                                />
-                                <span className="text-xs text-zinc-300 truncate w-full text-center">
-                                    {provider.name.length > 10 ? provider.name.slice(0, 10) + '…' : provider.name}
-                                </span>
-                            </button>
-                        ))}
+                                >
+                                    {profile.name || profile.id}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <div className="p-4 flex-1 overflow-y-auto">
+                        <h2 className="text-xs font-semibold text-ink-light uppercase tracking-wide mb-3">
+                            Karten ({currentTabs.length})
+                        </h2>
+                        <div className="space-y-1">
+                            {currentTabs.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTabId(tab.id)}
+                                    className={`w-full text-left px-3 py-2 rounded text-xs transition-colors ${
+                                        tab.id === activeTabId
+                                            ? 'bg-paper text-ink'
+                                            : 'text-ink-light hover:bg-paper/50'
+                                    }`}
+                                >
+                                    <div className="font-medium truncate">{tab.title || 'Unbenannt'}</div>
+                                    <div className="text-[10px] text-ink-light/60 truncate mt-0.5">{tab.url}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Hauptbereich - Karopapier-Tisch */}
+                <div className="flex-1 relative paper-grid overflow-hidden">
+                    {/* Placeholder für React Flow Canvas */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center max-w-md">
+                            <div className="tisch-card p-8 rounded-lg mb-4">
+                                <h1 className="text-2xl font-bold text-ink mb-2">Willkommen bei TISCH</h1>
+                                <p className="text-sm text-ink-light mb-4">
+                                    Dein unendlicher Kartentisch für AI-Workflows
+                                </p>
+                                <div className="text-xs text-ink-light/60">
+                                    React Flow Canvas wird hier geladen...
+                                </div>
+                            </div>
+                            
+                            {activeTab && (
+                                <div className="tisch-card p-4 rounded text-left">
+                                    <h3 className="font-semibold text-sm text-ink mb-2">Aktive Karte</h3>
+                                    <div className="text-xs font-medium text-ink">{activeTab.title}</div>
+                                    <a href={activeTab.url} target="_blank" rel="noopener noreferrer" 
+                                       className="text-xs text-accent-purple hover:underline">
+                                        {activeTab.url}
+                                    </a>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Default New Tab Button */}
-                    <button
-                        onClick={createTab}
-                        className="mt-6 flex items-center gap-2 px-4 py-2 text-sm text-zinc-400 hover:text-zinc-300 transition-colors duration-200"
-                    >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        or open default tab
-                    </button>
+                    {/* Schwebende Leiste unten */}
+                    <div className="absolute bottom-4 left-4 right-4 md:right-auto md:w-96">
+                        <div className="tisch-floating-bar rounded-lg p-3">
+                            <div className="flex items-center gap-3 text-xs">
+                                <div className="flex-1">
+                                    <div className="font-medium text-ink">Status</div>
+                                    <div className="text-ink-light text-[10px]">
+                                        Router: Bereit · Git: Lokal · MCP: Inaktiv
+                                    </div>
+                                </div>
+                                <button className="tisch-button text-[10px]">
+                                    Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            )}
-
-            <div className="flex-1" />
-
-            {/* Tab search palette (Ctrl+Shift+K) */}
-            {isTabSearchOpen && (
-                <TabSearchOverlay
-                    tabs={tabs}
-                    activeTabId={activeTabId}
-                    onSelectTab={switchTab}
-                    onClose={() => {
-                        setIsTabSearchOpen(false)
-                        window.api.showWebView?.()
-                    }}
-                />
-            )}
-        </div >
+            </div>
+        </div>
     )
 }
 
