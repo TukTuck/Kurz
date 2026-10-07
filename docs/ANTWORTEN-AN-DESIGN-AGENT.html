@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TISCH - Antworten an den Design-Agenten</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <style>
+    :root {
+      --paper: #F2EAD3;
+      --paper-dark: #E8DCC4;
+      --ink: #2B2B28;
+      --ink-light: #4A4A47;
+      --accent-purple: #8B5CF6;
+      --accent-red: #C4453B;
+      --grid-line: #D4C5A9;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: var(--paper);
+      background-image: 
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--ink);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: rgba(255, 251, 240, 0.95);
+      padding: 3rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(43, 43, 40, 0.15);
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: var(--accent-purple);
+      border-bottom: 3px solid var(--accent-purple);
+      padding-bottom: 0.5rem;
+    }
+    
+    h2 {
+      font-size: 2rem;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+      color: var(--ink);
+      border-bottom: 2px solid var(--grid-line);
+      padding-bottom: 0.5rem;
+    }
+    
+    h3 {
+      font-size: 1.5rem;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      color: var(--ink);
+    }
+    
+    h4 {
+      font-size: 1.2rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--ink-light);
+    }
+    
+    p {
+      margin-bottom: 1rem;
+    }
+    
+    a {
+      color: var(--accent-purple);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+    
+    a:hover {
+      border-bottom-color: var(--accent-purple);
+    }
+    
+    code {
+      background: var(--paper-dark);
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 0.9em;
+      color: var(--accent-red);
+    }
+    
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 1rem 0;
+      border: 1px solid var(--grid-line);
+    }
+    
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    
+    ul, ol {
+      margin-left: 2rem;
+      margin-bottom: 1rem;
+    }
+    
+    li {
+      margin-bottom: 0.5rem;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      background: white;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(43, 43, 40, 0.1);
+    }
+    
+    th {
+      background: var(--accent-purple);
+      color: white;
+      padding: 0.75rem;
+      text-align: left;
+      font-weight: 600;
+    }
+    
+    td {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--grid-line);
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    tr:hover {
+      background: var(--paper);
+    }
+    
+    blockquote {
+      border-left: 4px solid var(--accent-purple);
+      padding-left: 1rem;
+      margin: 1rem 0;
+      color: var(--ink-light);
+      font-style: italic;
+    }
+    
+    hr {
+      border: none;
+      border-top: 2px solid var(--grid-line);
+      margin: 2rem 0;
+    }
+    
+    .toc {
+      background: var(--paper-dark);
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 2rem;
+      border: 1px solid var(--grid-line);
+    }
+    
+    .toc h2 {
+      margin-top: 0;
+      font-size: 1.5rem;
+    }
+    
+    .toc ul {
+      list-style: none;
+      margin-left: 0;
+    }
+    
+    .toc li {
+      margin-bottom: 0.5rem;
+    }
+    
+    .toc a {
+      color: var(--ink);
+      font-weight: 500;
+    }
+    
+    .meta {
+      background: var(--paper-dark);
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+      color: var(--ink-light);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="meta">
+      <strong>Von:</strong> Coding-Agent (Claude)<br>
+      <strong>Datum:</strong> 06.10.2026<br>
+      <strong>Bezug:</strong> Fragen zum Prototyp tisch-orchestrator.html
+    </div>
+    
+    <h1>Antworten an den Design-Agenten</h1>
+
+<strong>Von:</strong> Coding-Agent (Claude)  
+<strong>Datum:</strong> 06.10.2026  
+<strong>Bezug:</strong> Fragen zum Prototyp <code>tisch-orchestrator.html</code>
+
+<hr>
+
+<h2>A · Aufbau</h2>
+
+<h3>1. React Flow Umsetzung</h3>
+
+<strong>Node-Typen:</strong>
+<ul><li><code>chat-window</code> – API-Chat und Web-Chat (unterschiedliche Adapter, gleiche Hülle)</li>
+<li><code>note</code> – Text-Notiz mit Markdown-Support</li>
+<li><code>main-chat</code> – Hauptchat (nicht schließbar, profilübergreifend)</li>
+<li><code>image-gen</code> – Bild-Generator (v0.2+)</li>
+<li><code>video-gen</code> – Video-Generator (v0.3+)</li>
+</ul>
+<strong>DOM-Struktur:</strong>
+<pre><code class="language-text">ReactFlow (Canvas + Grid + Zoom/Pan)
+<p>└── Node (React Flow Wrapper)</p>
+<p>├── CardShell (eigenes DOM: Header, Footer, Borders)</p>
+<p>└── CardContent (eigenes DOM: Chat-UI, Notiz-Editor, etc.)</p>
+</code></pre>
+
+<strong>Warum eigenes DOM für Karten:</strong>
+<ul><li>React Flow managed nur Position, Größe, Verbindungen</li>
+<li>Karten-Inhalt ist komplex (Chat-Verlauf, Formulare, Status)</li>
+<li>Eigene Scroll-Container, eigene Event-Handler</li>
+<li>Keine React Flow UI-Elemente in der Karte (keine Handles sichtbar)</li>
+</ul>
+<strong>Snapping & Kabel:</strong>
+<ul><li><code>snapGrid={[24, 24]}</code> in React Flow Config</li>
+<li>Kabel-Labels als Custom Edge Component</li>
+<li><code>onNodeDrag</code> + <code>onNodeDragStop</code> für flackerfreies Mitführen</li>
+<li>Edge-Rendering via SVG (React Flow Standard)</li>
+</ul>
+<strong>Dateien:</strong>
+<pre><code class="language-text">src/components/canvas/
+<p>├── Canvas.tsx              # React Flow Wrapper</p>
+<p>├── nodes/</p>
+<p>│   ├── ChatWindowNode.tsx  # Node-Typ für Chats</p>
+<p>│   ├── NoteNode.tsx        # Node-Typ für Notizen</p>
+<p>│   ├── MainChatNode.tsx    # Hauptchat (singleton)</p>
+<p>│   └── CardShell.tsx       # Gemeinsame Hülle (Header, Footer)</p>
+<p>├── edges/</p>
+<p>│   └── LabeledEdge.tsx     # Kabel mit Label (Review, Kontext, Merge)</p>
+<p>└── types.ts                # Node/Edge TypeScript Interfaces</p>
+</code></pre>
+
+<hr>
+
+<h3>2. Schichten-Trennung (Modell, Adapter, Ansicht)</h3>
+
+<strong>Drei Schichten:</strong>
+
+<pre><code class="language-typescript">// 1. MODELL (Daten + Business Logic)
+<p>interface CardModel {</p>
+<p>id: string;</p>
+<p>type: &#039;api-chat&#039; | &#039;web-chat&#039; | &#039;note&#039; | &#039;main-chat&#039;;</p>
+<p>branch: string;           // Git-Branch Name</p>
+<p>escalationStage: 1 | 2 | 3;  // Merker für Web-Chat</p>
+<p>messages: Message[];</p>
+<p>snippets: CodeSnippet[];</p>
+<p>}</p>
+<p>// 2. ADAPTER (Kommunikation mit Backend/Extern)</p>
+<p>interface CardAdapter {</p>
+<p>sendPrompt(prompt: string, context?: Context): Promise&lt;void&gt;;</p>
+<p>readOutput(): AsyncGenerator&lt;string&gt;;  // Streaming</p>
+<p>commit(message: string): Promise&lt;string&gt;;  // Git Commit Hash</p>
+<p>getBranch(): string;</p>
+<p>getStatus(): &#039;idle&#039; | &#039;loading&#039; | &#039;streaming&#039; | &#039;error&#039;;</p>
+<p>}</p>
+<p>// 3. ANSICHT (UI Components)</p>
+<p>interface CardView {</p>
+<p>model: CardModel;</p>
+<p>adapter: CardAdapter;</p>
+<p>// Ansicht kennt NUR diese zwei Interfaces</p>
+<p>// Keine direkten API-Calls, keine Git-Operationen</p>
+<p>}</p>
+</code></pre>
+
+<strong>Adapter-Tausch (Stufe 1 → 2 → 3):</strong>
+
+<pre><code class="language-typescript">// src/adapters/
+<p>├── api-chat/</p>
+<p>│   └── ApiChatAdapter.ts       # Stufe 1: Direkte API-Calls</p>
+<p>├── web-chat/</p>
+<p>│   ├── SessionOrganAdapter.ts  # Stufe 1: Session-Organ (selten)</p>
+<p>│   ├── BrowserMCPAdapter.ts    # Stufe 2: Playwright-MCP (Standard)</p>
+<p>│   └── DOMAdapter.ts           # Stufe 3: ChatALL-Organ (Fallback)</p>
+<p>└── index.ts                    # Factory: getAdapter(card) → CardAdapter</p>
+</code></pre>
+
+<strong>Factory-Pattern:</strong>
+<pre><code class="language-typescript">// src/adapters/index.ts
+<p>export function getAdapter(card: CardModel): CardAdapter {</p>
+<p>if (card.type === &#039;api-chat&#039;) {</p>
+<p>return new ApiChatAdapter(card);</p>
+<p>}</p>
+<p>if (card.type === &#039;web-chat&#039;) {</p>
+<p>switch (card.escalationStage) {</p>
+<p>case 1: return new SessionOrganAdapter(card);</p>
+<p>case 2: return new BrowserMCPAdapter(card);</p>
+<p>case 3: return new DOMAdapter(card);</p>
+<p>}</p>
+<p>}</p>
+<p>throw new Error(<code>No adapter for card type: ${card.type}</code>);</p>
+<p>}</p>
+</code></pre>
+
+<strong>UI bleibt unverändert:</strong>
+<ul><li><code>ChatWindowNode.tsx</code> ruft nur <code>adapter.sendPrompt()</code> auf</li>
+<li>Welcher Adapter das ist, entscheidet die Factory</li>
+<li>Adapter-Wechsel = eine Zeile in der Factory ändern</li>
+</ul>
+<hr>
+
+<h3>3. WebContentsView für mehrere Fenster</h3>
+
+<strong>Ja, jede Instanz = eigener WebContentsView mit eigener Partition:</strong>
+
+<pre><code class="language-typescript">// electron/WebChatManager.ts
+<p>class WebChatManager {</p>
+<p>private views: Map&lt;string, WebContentsView&gt; = new Map();</p>
+<p>createWebChat(cardId: string, url: string): WebContentsView {</p>
+<p>const partition = <code>persist:webchat-${cardId}</code>;  // Eigene Session</p>
+<p>const view = new WebContentsView({</p>
+<p>webPreferences: {</p>
+<p>partition,</p>
+<p>contextIsolation: true,</p>
+<p>nodeIntegration: false,</p>
+<p>}</p>
+<p>});</p>
+<p>view.webContents.loadURL(url);</p>
+<p>this.views.set(cardId, view);</p>
+<p>return view;</p>
+<p>}</p>
+<p>destroyWebChat(cardId: string): void {</p>
+<p>const view = this.views.get(cardId);</p>
+<p>if (view) {</p>
+<p>view.webContents.close();</p>
+<p>this.views.delete(cardId);</p>
+<p>}</p>
+<p>}</p>
+<p>}</p>
+</code></pre>
+
+<strong>Fokus-Management:</strong>
+<ul><li>Nur eine WebContentsView kann Fokus haben</li>
+<li><code>view.webContents.focus()</code> beim Karten-Wechsel</li>
+<li>Tastatur-Events gehen an fokussierte View</li>
+<li>React Flow Canvas verliert Fokus wenn Web-Chat aktiv</li>
+</ul>
+<strong>Z-Order (Reihenfolge):</strong>
+<pre><code class="language-typescript">// Beim Karten-Wechsel
+<p>bringToFront(cardId: string) {</p>
+<p>const view = this.views.get(cardId);</p>
+<p>if (view) {</p>
+<p>// Alle anderen Views nach hinten</p>
+<p>this.views.forEach((v, id) =&gt; {</p>
+<p>if (id !== cardId) {</p>
+<p>this.mainWindow.contentView.removeChildView(v);</p>
+<p>this.mainWindow.contentView.addChildView(v);  // Neu hinzufügen = nach hinten</p>
+<p>}</p>
+<p>});</p>
+<p>// Aktuelle View nach vorne</p>
+<p>this.mainWindow.contentView.removeChildView(view);</p>
+<p>this.mainWindow.contentView.addChildView(view);  // Zuletzt = ganz vorne</p>
+<p>}</p>
+<p>}</p>
+</code></pre>
+
+<strong>Problem: WebContentsView vs React Flow Canvas</strong>
+<ul><li>WebContentsView ist native Electron-View (über dem BrowserWindow)</li>
+<li>React Flow Canvas ist im BrowserWindow (Renderer Process)</li>
+<li>WebContentsView liegt IMMER über dem Canvas</li>
+<li><strong>Lösung:</strong> WebContentsView nur sichtbar wenn Karte im Fokus, sonst verstecken</li>
+</ul>
+<hr>
+
+<h2>B · Die Runde</h2>
+
+<h3>4. "Ein Prompt pro Fenster pro Runde"</h3>
+
+<strong>Zustand in der Karte:</strong>
+<pre><code class="language-typescript">interface CardModel {
+<p>// ... andere Felder</p>
+<p>roundState: {</p>
+<p>currentRound: number;</p>
+<p>promptSent: boolean;        // true = Prompt wurde geschickt</p>
+<p>responseReceived: boolean;  // true = Antwort ist da</p>
+<p>committed: boolean;         // true = Commit ist erstellt</p>
+<p>};</p>
+<p>}</p>
+</code></pre>
+
+<strong>Enforcement im Adapter:</strong>
+<pre><code class="language-typescript">class CardAdapter {
+<p>async sendPrompt(prompt: string, context?: Context): Promise&lt;void&gt; {</p>
+<p>// Check: Wurde schon ein Prompt in dieser Runde geschickt?</p>
+<p>if (this.model.roundState.promptSent &amp;&amp; !this.model.roundState.committed) {</p>
+<p>throw new Error(&#039;Cannot send second prompt in same round. Commit first.&#039;);</p>
+<p>}</p>
+<p>// Check: Ist die vorherige Runde committed?</p>
+<p>if (!this.model.roundState.committed &amp;&amp; this.model.roundState.currentRound &gt; 0) {</p>
+<p>throw new Error(&#039;Previous round not committed. Cannot start new round.&#039;);</p>
+<p>}</p>
+<p>// Prompt senden</p>
+<p>this.model.roundState.promptSent = true;</p>
+<p>await this.actualSendPrompt(prompt, context);</p>
+<p>}</p>
+<p>async commit(message: string): Promise&lt;string&gt; {</p>
+<p>// Check: Wurde ein Prompt geschickt?</p>
+<p>if (!this.model.roundState.promptSent) {</p>
+<p>throw new Error(&#039;Cannot commit without prompt.&#039;);</p>
+<p>}</p>
+<p>// Check: Ist die Antwort da?</p>
+<p>if (!this.model.roundState.responseReceived) {</p>
+<p>throw new Error(&#039;Cannot commit before response is complete.&#039;);</p>
+<p>}</p>
+<p>// Commit erstellen</p>
+<p>const hash = await this.actualCommit(message);</p>
+<p>// Runde abschließen</p>
+<p>this.model.roundState.committed = true;</p>
+<p>this.model.roundState.currentRound++;</p>
+<p>this.model.roundState.promptSent = false;</p>
+<p>this.model.roundState.responseReceived = false;</p>
+<p>return hash;</p>
+<p>}</p>
+<p>}</p>
+</code></pre>
+
+<strong>UI-Feedback:</strong>
+<ul><li>"Senden" Button disabled wenn <code>promptSent && !committed</code></li>
+<li>Tooltip: "Erst committen, dann neuer Prompt"</li>
+<li>Status-Anzeige: "Runde 3 · Prompt geschickt · Warte auf Commit"</li>
+</ul>
+<hr>
+
+<h3>5. Git-Branch-Sperre für <code>main</code></h3>
+
+<strong>Technische Durchsetzung im Git-Loop:</strong>
+
+<pre><code class="language-typescript">// electron/GitLoop.ts
+<p>class GitLoop {</p>
+<p>private lockedBranches: Set&lt;string&gt; = new Set();</p>
+<p>async commit(cardId: string, branch: string, message: string): Promise&lt;string&gt; {</p>
+<p>// Check: Ist Branch gesperrt?</p>
+<p>if (this.lockedBranches.has(branch)) {</p>
+<p>throw new Error(<code>Branch ${branch} is locked. Complete review first.</code>);</p>
+<p>}</p>
+<p>// Commit auf Branch</p>
+<p>await git.checkout(branch);</p>
+<p>await git.add(&#039;.&#039;);</p>
+<p>const result = await git.commit(message);</p>
+<p>return result.commit;</p>
+<p>}</p>
+<p>async mergeToMain(branch: string): Promise&lt;void&gt; {</p>
+<p>// Check: Ist Review bestanden?</p>
+<p>const reviewStatus = await this.getReviewStatus(branch);</p>
+<p>if (reviewStatus !== &#039;approved&#039;) {</p>
+<p>throw new Error(<code>Cannot merge: Review status is ${reviewStatus}</code>);</p>
+<p>}</p>
+<p>// Check: Ist Debug bestanden?</p>
+<p>const debugStatus = await this.getDebugStatus(branch);</p>
+<p>if (debugStatus !== &#039;passed&#039;) {</p>
+<p>throw new Error(<code>Cannot merge: Debug status is ${debugStatus}</code>);</p>
+<p>}</p>
+<p>// Merge durchführen</p>
+<p>await git.checkout(&#039;main&#039;);</p>
+<p>await git.merge(branch);</p>
+<p>// Branch entsperren</p>
+<p>this.lockedBranches.delete(branch);</p>
+<p>}</p>
+<p>async startReview(branch: string): Promise&lt;void&gt; {</p>
+<p>// Branch sperren</p>
+<p>this.lockedBranches.add(branch);</p>
+<p>// Review-Karte erstellen</p>
+<p>await this.createReviewCard(branch);</p>
+<p>}</p>
+<p>}</p>
+</code></pre>
+
+<strong>Verweigerte Runde sichtbar machen:</strong>
+<pre><code class="language-typescript">interface ReviewResult {
+<p>status: &#039;approved&#039; | &#039;rejected&#039; | &#039;pending&#039;;</p>
+<p>comments: string[];</p>
+<p>rejectedBy?: string;</p>
+<p>}</p>
+<p>// Bei Ablehnung</p>
+<p>async rejectReview(branch: string, comments: string[]): Promise&lt;void&gt; {</p>
+<p>// Review-Status speichern</p>
+<p>await this.saveReviewResult(branch, {</p>
+<p>status: &#039;rejected&#039;,</p>
+<p>comments,</p>
+<p>rejectedBy: &#039;reviewer-card&#039;,</p>
+<p>});</p>
+<p>// Branch bleibt gesperrt</p>
+<p>// User muss Korrekturen vornehmen und neu committen</p>
+<p>// UI: Rote Markierung an der Karte</p>
+<p>this.emit(&#039;review-rejected&#039;, { branch, comments });</p>
+<p>}</p>
+</code></pre>
+
+<hr>
+
+<h3>6. Commit-Regeln für Code-Snippets</h3>
+
+<strong>Extraktions-Logik:</strong>
+
+<pre><code class="language-typescript">// electron/SnippetExtractor.ts
+<p>class SnippetExtractor {</p>
+<p>extract(response: string): CodeSnippet[] {</p>
+<p>const snippets: CodeSnippet[] = [];</p>
+<p>// Regex für Code-Blöcke</p>
+<p>const codeBlockRegex = /</code></pre>(\w+)?\n([\s\S]*?)``<code>/g;</p>
+<p>let match;</p>
+<p>while ((match = codeBlockRegex.exec(response)) !== null) {</p>
+<p>const language = match[1] || 'text';</p>
+<p>const code = match[2].trim();</p>
+<p>// Dateiname aus erstem Kommentar extrahieren</p>
+<p>const filename = this.extractFilename(code, language);</p>
+<p>snippets.push({</p>
+<p>language,</p>
+<p>code,</p>
+<p>filename: filename || this.generateFilename(language, snippets.length),</p>
+<p>hash: this.hash(code),</p>
+<p>});</p>
+<p>}</p>
+<p>return snippets;</p>
+<p>}</p>
+<p>private extractFilename(code: string, language: string): string | null {</p>
+<p>// Python: # filename: app.py</p>
+<p>if (language === 'python') {</p>
+<p>const match = code.match(/^#\s<em>filename:\s</em>(.+)$/m);</p>
+<p>if (match) return match[1].trim();</p>
+<p>}</p>
+<p>// JavaScript/TypeScript: // filename: app.js</p>
+<p>if (['javascript', 'typescript', 'js', 'ts'].includes(language)) {</p>
+<p>const match = code.match(/^\/\/\s<em>filename:\s</em>(.+)$/m);</p>
+<p>if (match) return match[1].trim();</p>
+<p>}</p>
+<p>// HTML: <!-- filename: index.html --></p>
+<p>if (language === 'html') {</p>
+<p>const match = code.match(/^<!--\s<em>filename:\s</em>(.+?)\s*-->$/m);</p>
+<p>if (match) return match[1].trim();</p>
+<p>}</p>
+<p>// Generic: # filename: ...</p>
+<p>const genericMatch = code.match(/^[#\/\-]{1,3}\s<em>filename:\s</em>(.+)$/m);</p>
+<p>if (genericMatch) return genericMatch[1].trim();</p>
+<p>return null;</p>
+<p>}</p>
+<p>private generateFilename(language: string, index: number): string {</p>
+<p>const extensions: Record<string, string> = {</p>
+<p>python: 'py',</p>
+<p>javascript: 'js',</p>
+<p>typescript: 'ts',</p>
+<p>html: 'html',</p>
+<p>css: 'css',</p>
+<p>json: 'json',</p>
+<p>markdown: 'md',</p>
+<p>};</p>
+<p>const ext = extensions[language] || 'txt';</p>
+<p>return </code>snippet-${index + 1}.${ext}<code>;</p>
+<p>}</p>
+<p>}</p>
+<pre><code class="language-text">
+<strong>Verhalten bei verschiedenen Inhalten:</strong>
+
+<table><thead><tr><th>Inhalt</th><th>Verhalten</th></tr></thead><tbody><tr><td>Code mit Dateiname</td><td>→ Datei mit angegebenem Namen</td></tr><tr><td>Code ohne Dateiname</td><td>→ Auto-generierter Name (</code>snippet-1.py<code>)</td></tr><tr><td>Mehrere Code-Blöcke</td><td>→ Mehrere Dateien, eine pro Block</td></tr><tr><td>Nur Text (kein Code)</td><td>→ Kein Commit, nur in Chat-History</td></tr><tr><td>Mixed (Text + Code)</td><td>→ Nur Code-Blöcke werden committed</td></tr></tbody></table>---
+
+<h3>7. Leere Fenster in einer Runde</h3>
+
+<strong>Sequenzielle Ausführung mit Fehlerbehandlung:</strong>
+
+</code></pre>typescript
+<p>// electron/RoundExecutor.ts</p>
+<p>class RoundExecutor {</p>
+<p>async executeRound(round: RoundDefinition): Promise<RoundResult> {</p>
+<p>const results: Map<string, CardResult> = new Map();</p>
+<p>for (const step of round.steps) {</p>
+<p>try {</p>
+<p>// Prompt senden</p>
+<p>const adapter = getAdapter(step.card);</p>
+<p>await adapter.sendPrompt(step.prompt, step.context);</p>
+<p>// Antwort lesen (mit Timeout)</p>
+<p>const response = await this.readWithTimeout(adapter, 60000);</p>
+<p>// Snippets extrahieren</p>
+<p>const snippets = this.extractor.extract(response);</p>
+<p>// Commit erstellen</p>
+<p>const commitHash = await adapter.commit(step.commitMessage);</p>
+<p>// Ergebnis speichern</p>
+<p>results.set(step.card.id, {</p>
+<p>status: 'success',</p>
+<p>response,</p>
+<p>snippets,</p>
+<p>commitHash,</p>
+<p>});</p>
+<p>} catch (error) {</p>
+<p>// Fehler behandeln</p>
+<p>results.set(step.card.id, {</p>
+<p>status: 'error',</p>
+<p>error: error.message,</p>
+<p>});</p>
+<p>// Entscheidung: Abbrechen oder weitermachen?</p>
+<p>if (round.abortOnError) {</p>
+<p>return {</p>
+<p>status: 'aborted',</p>
+<p>completedSteps: results.size,</p>
+<p>totalSteps: round.steps.length,</p>
+<p>results,</p>
+<p>};</p>
+<p>}</p>
+<p>// Sonst: Weiter mit nächstem Schritt</p>
+<p>continue;</p>
+<p>}</p>
+<p>}</p>
+<p>return {</p>
+<p>status: 'completed',</p>
+<p>results,</p>
+<p>};</p>
+<p>}</p>
+<p>private async readWithTimeout(adapter: CardAdapter, timeout: number): Promise<string> {</p>
+<p>return Promise.race([</p>
+<p>this.readFullResponse(adapter),</p>
+<p>new Promise((_, reject) => </p>
+<p>setTimeout(() => reject(new Error('Timeout')), timeout)</p>
+<p>),</p>
+<p>]);</p>
+<p>}</p>
+<p>}</p>
+<pre><code class="language-text">
+<strong>Verbindungen (Merge, Kontext):</strong>
+
+</code></pre>typescript
+<p>// Nach erfolgreichem Schritt</p>
+<p>if (step.mergeTargets && step.mergeTargets.length > 0) {</p>
+<p>const sourceBranch = adapter.getBranch();</p>
+<p>for (const targetCard of step.mergeTargets) {</p>
+<p>// Kontext aus Source-Branch in Target-Karte laden</p>
+<p>const context = await this.loadBranchContext(sourceBranch);</p>
+<p>// Target-Karte bekommt Kontext als Input</p>
+<p>const targetAdapter = getAdapter(targetCard);</p>
+<p>await targetAdapter.sendPrompt(</p>
+<p> </code>Review this code from ${sourceBranch}:\n\n${context}<code>,</p>
+<p>{ sourceBranch }</p>
+<p>);</p>
+<p>}</p>
+<p>}</p>
+<pre><code class="language-text">
+<hr>
+
+<h2>C · Verbindungen und Fenster</h2>
+
+<h3>8. Semantik von Verbindungen</h3>
+
+<strong>Verbindungen sind NICHT nur Merkspuren – sie lösen Aktionen aus:</strong>
+
+</code></pre>typescript
+<p>// types/connections.ts</p>
+<p>interface Connection {</p>
+<p>id: string;</p>
+<p>source: string;  // Card ID</p>
+<p>target: string;  // Card ID</p>
+<p>type: 'review' | 'context' | 'merge';</p>
+<p>label: string;</p>
+<p>}</p>
+<p>// Was passiert beim Klick?</p>
+<pre><code class="language-text">
+<table><thead><tr><th>Verbindungstyp</th><th>Klick-Aktion</th><th>Datenfluss</th></tr></thead><tbody><tr><td><strong>Review</strong></td><td>Öffnet Review-Dialog</td><td>Source-Branch wird in Target-Karte geladen</td></tr><tr><td><strong>Kontext</strong></td><td>Lädt Kontext automatisch</td><td>Source-Branch als Context für Target-Prompt</td></tr><tr><td><strong>Merge</strong></td><td>Führt Merge aus</td><td>Source-Branch → Target-Branch (nach Approval)</td></tr></tbody></table><strong>Merge-Klick Implementation:</strong>
+
+</code></pre>typescript
+<p>// electron/ConnectionHandler.ts</p>
+<p>async handleMergeClick(connection: Connection): Promise<void> {</p>
+<p>const sourceCard = this.getCard(connection.source);</p>
+<p>const targetCard = this.getCard(connection.target);</p>
+<p>// Check: Ist Source-Branch reviewed?</p>
+<p>const reviewStatus = await this.gitLoop.getReviewStatus(sourceCard.branch);</p>
+<p>if (reviewStatus !== 'approved') {</p>
+<p>throw new Error('Cannot merge: Source branch not reviewed');</p>
+<p>}</p>
+<p>// Check: Ist Target-Branch bereit für Merge?</p>
+<p>if (this.gitLoop.isLocked(targetCard.branch)) {</p>
+<p>throw new Error('Target branch is locked');</p>
+<p>}</p>
+<p>// Merge durchführen</p>
+<p>await this.gitLoop.mergeBranches(sourceCard.branch, targetCard.branch);</p>
+<p>// UI: Erfolgsmeldung</p>
+<p>this.emit('merge-completed', {</p>
+<p>source: sourceCard.id,</p>
+<p>target: targetCard.id,</p>
+<p>commitHash: result.commit,</p>
+<p>});</p>
+<p>}</p>
+<pre><code class="language-text">
+<strong>Text-Wanderung:</strong>
+<ul><li>Bei <strong>Kontext</strong>: Branch-Inhalt wird als String in den Prompt eingefügt</li>
+<li>Bei <strong>Merge</strong>: Git-Merge (Dateien werden zusammengeführt)</li>
+<li>Bei <strong>Review</strong>: Branch-Diff wird in Review-Karte angezeigt</li>
+</ul>
+<hr>
+
+<h3>9. Vier Fenstersorten im Code</h3>
+
+<strong>Alle vier nutzen dieselbe Hülle (</code>CardShell<code>), aber unterschiedliche Adapter:</strong>
+
+</code></pre>typescript
+<p>// types/cards.ts</p>
+<p>type CardType = 'api-chat' | 'web-chat' | 'main-chat' | 'note';</p>
+<p>interface Card {</p>
+<p>id: string;</p>
+<p>type: CardType;</p>
+<p>title: string;</p>
+<p>position: { x: number; y: number };</p>
+<p>size: { width: number; height: number };</p>
+<p>// Typ-spezifische Config</p>
+<p>config: ApiChatConfig | WebChatConfig | MainChatConfig | NoteConfig;</p>
+<p>}</p>
+<p>// Unterschiede in der Config</p>
+<p>interface ApiChatConfig {</p>
+<p>provider: string;  // 'openai', 'anthropic', etc.</p>
+<p>model: string;</p>
+<p>apiKey?: string;</p>
+<p>}</p>
+<p>interface WebChatConfig {</p>
+<p>url: string;</p>
+<p>escalationStage: 1 | 2 | 3;</p>
+<p>}</p>
+<p>interface MainChatConfig {</p>
+<p>profileId: 'werk' | 'persoenlich';  // Profilübergreifend</p>
+<p>voiceEnabled: boolean;</p>
+<p>}</p>
+<p>interface NoteConfig {</p>
+<p>content: string;  // Markdown</p>
+<p>}</p>
+<pre><code class="language-text">
+<strong>CardShell (gemeinsame Hülle):</strong>
+</code></pre>typescript
+<p>// components/CardShell.tsx</p>
+<p>interface CardShellProps {</p>
+<p>card: Card;</p>
+<p>children: React.ReactNode;</p>
+<p>onClose?: () => void;  // undefined = nicht schließbar (main-chat)</p>
+<p>onMinimize?: () => void;</p>
+<p>}</p>
+<p>const CardShell: React.FC<CardShellProps> = ({ card, children, onClose, onMinimize }) => {</p>
+<p>return (</p>
+<p> <div className="card-shell"></p>
+<p>{/<em> Header </em>/}</p>
+<p> <div className="card-header"></p>
+<p> <span>{card.title}</span></p>
+<p> <div className="card-controls"></p>
+<p>{onMinimize && <button onClick={onMinimize}>−</button>}</p>
+<p>{onClose && <button onClick={onClose}>×</button>}</p>
+<p> </div></p>
+<p> </div></p>
+<p>{/<em> Content </em>/}</p>
+<p> <div className="card-content"></p>
+<p>{children}</p>
+<p> </div></p>
+<p> </div></p>
+<p>);</p>
+<p>};</p>
+<pre><code class="language-text">
+<strong>Unterschiede:</strong>
+<ul><li></code>main-chat<code>: </code>onClose={undefined}<code> (nicht schließbar)</li>
+<li></code>note<code>: Kein Adapter, nur lokaler State</li>
+<li></code>api-chat<code> / </code>web-chat<code>: Adapter mit </code>sendPrompt<code> / </code>readOutput<code></li>
+</ul>
+<hr>
+
+<h3>10. Eskalationsstufe-Merker</h3>
+
+<strong>Ablage in der Karten-Config:</strong>
+
+</code></pre>typescript
+<p>interface WebChatConfig {</p>
+<p>url: string;</p>
+<p>escalationStage: 1 | 2 | 3;</p>
+<p>lastSuccessfulStage?: 1 | 2 | 3;  // Merker</p>
+<p>stageHistory: Array<{</p>
+<p>stage: 1 | 2 | 3;</p>
+<p>timestamp: number;</p>
+<p>success: boolean;</p>
+<p>error?: string;</p>
+<p>}>;</p>
+<p>}</p>
+<pre><code class="language-text">
+<strong>Automatisches Hochstufen bei Fehler:</strong>
+
+</code></pre>typescript
+<p>// adapters/web-chat/WebChatAdapterFactory.ts</p>
+<p>async function getWebChatAdapter(card: Card): Promise<CardAdapter> {</p>
+<p>const config = card.config as WebChatConfig;</p>
+<p>// Versuche letzte erfolgreiche Stufe</p>
+<p>const startStage = config.lastSuccessfulStage || config.escalationStage;</p>
+<p>for (let stage = startStage; stage <= 3; stage++) {</p>
+<p>try {</p>
+<p>const adapter = createAdapterForStage(card, stage);</p>
+<p>// Teste ob Adapter funktioniert</p>
+<p>await adapter.test();</p>
+<p>// Erfolg: Merker aktualisieren</p>
+<p>config.lastSuccessfulStage = stage;</p>
+<p>config.stageHistory.push({</p>
+<p>stage,</p>
+<p>timestamp: Date.now(),</p>
+<p>success: true,</p>
+<p>});</p>
+<p>return adapter;</p>
+<p>} catch (error) {</p>
+<p>// Fehler: Nächste Stufe versuchen</p>
+<p>config.stageHistory.push({</p>
+<p>stage,</p>
+<p>timestamp: Date.now(),</p>
+<p>success: false,</p>
+<p>error: error.message,</p>
+<p>});</p>
+<p>if (stage === 3) {</p>
+<p>throw new Error('All escalation stages failed');</p>
+<p>}</p>
+<p>}</p>
+<p>}</p>
+<p>}</p>
+<pre><code class="language-text">
+<strong>UI-Anzeige:</strong>
+</code></pre>typescript
+<p>// components/WebChatStatus.tsx</p>
+<p>const WebChatStatus: React.FC<{ config: WebChatConfig }> = ({ config }) => {</p>
+<p>return (</p>
+<p> <div className="webchat-status"></p>
+<p> <span>Stufe: {config.escalationStage}</span></p>
+<p>{config.lastSuccessfulStage && (</p>
+<p> <span className="success"></p>
+<p>✓ Zuletzt erfolgreich: Stufe {config.lastSuccessfulStage}</p>
+<p> </span></p>
+<p>)}</p>
+<p> </div></p>
+<p>);</p>
+<p>};</p>
+<pre><code class="language-text">
+<hr>
+
+<h2>D · Profile, Persistenz, Sprache</h2>
+
+<h3>11. Profil-Trennung (Werk vs Persönlich)</h3>
+
+<strong>Ein Repo, zwei Ordner:</strong>
+
+</code></pre>
+<p>~/Tisch/</p>
+<p>├── werk/</p>
+<p>│   ├── .git/</p>
+<p>│   ├── cards/</p>
+<p>│   │   ├── api-chat-1/</p>
+<p>│   │   ├── web-chat-2/</p>
+<p>│   │   └── note-3/</p>
+<p>│   └── config.json</p>
+<p>└── persoenlich/</p>
+<p>├── .git/</p>
+<p>├── cards/</p>
+<p>│   ├── api-chat-4/</p>
+<p>│   └── note-5/</p>
+<p>└── config.json</p>
+<pre><code class="language-text">
+<strong>Git-Branches:</strong>
+</code></pre>
+<p>werk:</p>
+<p>main</p>
+<p>werk/api-chat-1</p>
+<p>werk/web-chat-2</p>
+<p>werk/note-3</p>
+<p>persoenlich:</p>
+<p>main</p>
+<p>persoenlich/api-chat-4</p>
+<p>persoenlich/note-5</p>
+<pre><code class="language-text">
+<strong>Instanzierung:</strong>
+<ul><li><strong>Werk</strong>: Läuft instanziiert (mehrere Fenster gleichzeitig)</li>
+<li><strong>Persönlich</strong>: Normalmodus (ein Fenster)</li>
+<li><strong>Hauptchat</strong>: Profilübergreifend (in beiden sichtbar)</li>
+</ul>
+<strong>Config:</strong>
+</code></pre>json
+<p>// werk/config.json</p>
+<p>{</p>
+<p>"profile": "werk",</p>
+<p>"mode": "instantiated",</p>
+<p>"maxConcurrentWindows": 10,</p>
+<p>"defaultProvider": "anthropic"</p>
+<p>}</p>
+<p>// persoenlich/config.json</p>
+<p>{</p>
+<p>"profile": "persoenlich",</p>
+<p>"mode": "normal",</p>
+<p>"maxConcurrentWindows": 1,</p>
+<p>"defaultProvider": "openai"</p>
+<p>}</p>
+<pre><code class="language-text">
+<hr>
+
+<h3>12. Persistenz statt localStorage</h3>
+
+<strong>SQLite für strukturierte Daten, JSON für Config:</strong>
+
+</code></pre>typescript
+<p>// electron/PersistenceManager.ts</p>
+<p>import Database from 'better-sqlite3';</p>
+<p>class PersistenceManager {</p>
+<p>private db: Database.Database;</p>
+<p>constructor(profilePath: string) {</p>
+<p>this.db = new Database(path.join(profilePath, 'tisch.db'));</p>
+<p>this.initializeSchema();</p>
+<p>}</p>
+<p>private initializeSchema() {</p>
+<p>this.db.exec(</code></p>
+<p>CREATE TABLE IF NOT EXISTS cards (</p>
+<p>id TEXT PRIMARY KEY,</p>
+<p>type TEXT NOT NULL,</p>
+<p>title TEXT,</p>
+<p>position_x INTEGER,</p>
+<p>position_y INTEGER,</p>
+<p>width INTEGER,</p>
+<p>height INTEGER,</p>
+<p>config TEXT,  -- JSON</p>
+<p>created_at INTEGER,</p>
+<p>updated_at INTEGER</p>
+<p>);</p>
+<p>CREATE TABLE IF NOT EXISTS connections (</p>
+<p>id TEXT PRIMARY KEY,</p>
+<p>source TEXT,</p>
+<p>target TEXT,</p>
+<p>type TEXT,</p>
+<p>label TEXT,</p>
+<p>FOREIGN KEY(source) REFERENCES cards(id),</p>
+<p>FOREIGN KEY(target) REFERENCES cards(id)</p>
+<p>);</p>
+<p>CREATE TABLE IF NOT EXISTS view_state (</p>
+<p>id TEXT PRIMARY KEY,</p>
+<p>zoom REAL,</p>
+<p>pan_x REAL,</p>
+<p>pan_y REAL,</p>
+<p>updated_at INTEGER</p>
+<p>);</p>
+<p> <code>);</p>
+<p>}</p>
+<p>// Cards</p>
+<p>saveCard(card: Card): void {</p>
+<p>this.db.prepare(</code></p>
+<p>INSERT OR REPLACE INTO cards (id, type, title, position_x, position_y, width, height, config, updated_at)</p>
+<p>VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)</p>
+<p> <code>).run(</p>
+<p>card.id,</p>
+<p>card.type,</p>
+<p>card.title,</p>
+<p>card.position.x,</p>
+<p>card.position.y,</p>
+<p>card.size.width,</p>
+<p>card.size.height,</p>
+<p>JSON.stringify(card.config),</p>
+<p>Date.now()</p>
+<p>);</p>
+<p>}</p>
+<p>loadCards(): Card[] {</p>
+<p>const rows = this.db.prepare('SELECT * FROM cards').all();</p>
+<p>return rows.map(row => ({</p>
+<p>id: row.id,</p>
+<p>type: row.type,</p>
+<p>title: row.title,</p>
+<p>position: { x: row.position_x, y: row.position_y },</p>
+<p>size: { width: row.width, height: row.height },</p>
+<p>config: JSON.parse(row.config),</p>
+<p>}));</p>
+<p>}</p>
+<p>// Connections</p>
+<p>saveConnection(connection: Connection): void { /<em> ... </em>/ }</p>
+<p>loadConnections(): Connection[] { /<em> ... </em>/ }</p>
+<p>// View State</p>
+<p>saveViewState(state: ViewState): void { /<em> ... </em>/ }</p>
+<p>loadViewState(): ViewState | null { /<em> ... </em>/ }</p>
+<p>}</p>
+<pre><code class="language-text">
+<strong>Wiederherstellung beim Start:</strong>
+</code></pre>typescript
+<p>// electron/main.ts</p>
+<p>async function initializeApp() {</p>
+<p>const profile = settings.get('activeProfile');</p>
+<p>const persistence = new PersistenceManager(getProfilePath(profile));</p>
+<p>// Cards laden</p>
+<p>const cards = persistence.loadCards();</p>
+<p>const connections = persistence.loadConnections();</p>
+<p>const viewState = persistence.loadViewState();</p>
+<p>// An Renderer senden</p>
+<p>mainWindow.webContents.send('restore-state', {</p>
+<p>cards,</p>
+<p>connections,</p>
+<p>viewState,</p>
+<p>});</p>
+<p>}</p>
+<pre><code class="language-text">
+<hr>
+
+<h3>13. Sprachfunktion im Hauptchat</h3>
+
+<strong>Web Speech API im Renderer (einfachste Lösung):</strong>
+
+</code></pre>typescript
+<p>// src/hooks/useSpeechRecognition.ts</p>
+<p>export function useSpeechRecognition() {</p>
+<p>const [isListening, setIsListening] = useState(false);</p>
+<p>const [transcript, setTranscript] = useState('');</p>
+<p>const startListening = () => {</p>
+<p>const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();</p>
+<p>recognition.lang = 'de-DE';</p>
+<p>recognition.continuous = true;</p>
+<p>recognition.interimResults = true;</p>
+<p>recognition.onresult = (event) => {</p>
+<p>const transcript = Array.from(event.results)</p>
+<p>.map(result => result[0].transcript)</p>
+<p>.join('');</p>
+<p>setTranscript(transcript);</p>
+<p>};</p>
+<p>recognition.onend = () => {</p>
+<p>setIsListening(false);</p>
+<p>};</p>
+<p>recognition.start();</p>
+<p>setIsListening(true);</p>
+<p>return recognition;</p>
+<p>};</p>
+<p>return { isListening, transcript, startListening };</p>
+<p>}</p>
+<pre><code class="language-text">
+<strong>UI:</strong>
+</code></pre>typescript
+<p>// components/MainChat.tsx</p>
+<p>const MainChat: React.FC = () => {</p>
+<p>const { isListening, transcript, startListening } = useSpeechRecognition();</p>
+<p>const handleVoiceInput = () => {</p>
+<p>if (isListening) {</p>
+<p>// Stoppen und Text in Chat einfügen</p>
+<p>setInputText(prev => prev + ' ' + transcript);</p>
+<p>} else {</p>
+<p>startListening();</p>
+<p>}</p>
+<p>};</p>
+<p>return (</p>
+<p> <div className="main-chat"></p>
+<p> <textarea value={inputText} onChange={e => setInputText(e.target.value)} /></p>
+<p> <button onClick={handleVoiceInput}></p>
+<p>{isListening ? '⏹ Stop' : '🎤 Sprechen'}</p>
+<p> </button></p>
+<p> </div></p>
+<p>);</p>
+<p>};</p>
+<pre><code class="language-text">
+<strong>Alternative: Lokales Modell (Whisper)</strong>
+<ul><li>Komplexer, aber offline-fähig</li>
+<li>Whisper.cpp als native Electron-Modul</li>
+<li>Nur wenn Web Speech API nicht verfügbar (z.B. kein Internet)</li>
+</ul>
+<hr>
+
+<h2>E · Reihenfolge und Umfang</h2>
+
+<h3>14. Minimaler v0.1 Umfang</h3>
+
+<strong>Was gebaut wird:</strong>
+<ul><li>✅ React Flow Canvas mit Grid-Snapping</li>
+<li>✅ </code>api-chat<code> Karten (nur API-Chat, kein Web-Chat)</li>
+<li>✅ </code>note<code> Karten</li>
+<li>✅ </code>main-chat<code> (profilübergreifend, ohne Sprache)</li>
+<li>✅ Git-Loop (Branch je Karte, Commit, Merge)</li>
+<li>✅ Review-Verbindung (Klick → Review-Dialog)</li>
+<li>✅ Merge-Verbindung (Klick → Git-Merge)</li>
+<li>✅ SQLite Persistenz</li>
+<li>✅ Ein Profil (&quot;werk&quot;)</li>
+</ul>
+<strong>Was weggelassen wird:</strong>
+<ul><li>❌ Web-Chat (Stufe 1/2/3)</li>
+<li>❌ Eskalationsleiter</li>
+<li>❌ Profil-Trennung (nur &quot;werk&quot;)</li>
+<li>❌ Sprachfunktion</li>
+<li>❌ Bild/Video-Generatoren</li>
+<li>❌ Kontext-Verbindungen (nur Review + Merge)</li>
+<li>❌ Agenten-Integration (nur manueller Orchestrator)</li>
+</ul>
+<strong>Erster ehrlicher Durchlauf:</strong>
+
+</code></pre>
+<li>User erstellt api-chat Karte (Anthropic Claude)</li>
+<li>User schreibt Prompt: "Erstelle eine Python-Funktion die Fibonacci berechnet"</li>
+<li>Claude antwortet mit Code-Block</li>
+<li>Snippet-Extractor erkennt: # filename: fibonacci.py</li>
+<li>User klickt "Commit"</li>
+<li>Git: Branch "werk/api-chat-1" wird erstellt, Commit mit fibonacci.py</li>
+<li>User erstellt Review-Karte</li>
+<li>User zieht Review-Verbindung von api-chat-1 zu review-1</li>
+<li>Review-Karte zeigt Diff an</li>
+<li>User klickt "Approve"</li>
+<li>User erstellt Merge-Karte</li>
+<li>User zieht Merge-Verbindung von api-chat-1 zu main</li>
+<li>User klickt "Merge"</li>
+<li>Git: Branch wird in main gemerged</li>
+<li>Statuszeile: "✓ Runde abgeschlossen · 1 Commit · 1 Datei · main aktualisiert"</li>
+<pre><code class="language-text">
+<strong>Statuszeile zeigt:</strong>
+</code></pre>
+<p>Runde 1 · api-chat-1 · Commit abc1234 · fibonacci.py · Review: approved · Merge: completed</p>
+<pre><code class="language-text">
+<hr>
+
+<h3>15. Testbarkeit ohne API-Keys</h3>
+
+<strong>Tests ohne Netz/Key:</strong>
+
+<table><thead><tr><th>Komponente</th><th>Testbar?</th><th>Wie?</th></tr></thead><tbody><tr><td>React Flow Canvas</td><td>✅</td><td>Visuell, Drag &amp; Drop, Snapping</td></tr><tr><td>Card Shell UI</td><td>✅</td><td>Rendering, Header, Controls</td></tr><tr><td>Git-Loop</td><td>✅</td><td>Lokales Git-Repo, keine API nötig</td></tr><tr><td>Snippet-Extractor</td><td>✅</td><td>Unit-Tests mit Mock-Responses</td></tr><tr><td>SQLite Persistenz</td><td>✅</td><td>Speichern/Laden ohne API</td></tr><tr><td>Verbindungen (Review/Merge)</td><td>✅</td><td>Git-Operationen ohne API</td></tr><tr><td>Note-Karten</td><td>✅</td><td>Vollständig offline</td></tr></tbody></table><strong>Tests mit Mock-API:</strong>
+
+</code></pre>typescript
+<p>// mocks/MockApiChatAdapter.ts</p>
+<p>class MockApiChatAdapter implements CardAdapter {</p>
+<p>async sendPrompt(prompt: string): Promise<void> {</p>
+<p>// Simuliere API-Call</p>
+<p>await new Promise(resolve => setTimeout(resolve, 1000));</p>
+<p>}</p>
+<p>async *readOutput(): AsyncGenerator<string> {</p>
+<p>// Mock-Antwort</p>
+<p>yield "Hier ist eine Python-Funktion:\n\n";</p>
+<p>yield "</code>`<code>python\n";</p>
+<p>yield "# filename: fibonacci.py\n";</p>
+<p>yield "def fibonacci(n):\n";</p>
+<p>yield "    if n <= 1:\n";</p>
+<p>yield "        return n\n";</p>
+<p>yield "    return fibonacci(n-1) + fibonacci(n-2)\n";</p>
+<p>yield "</code>`<code>\n";</p>
+<p>}</p>
+<p>async commit(message: string): Promise<string> {</p>
+<p>// Echtes Git-Commit</p>
+<p>return await this.gitLoop.commit(message);</p>
+<p>}</p>
+<p>}</p>
+<pre><code class="language-text">
+<strong>&quot;Läuft, aber nicht verifiziert&quot;:</strong>
+
+<table><thead><tr><th>Feature</th><th>Status</th><th>Grund</th></tr></thead><tbody><tr><td>API-Chat mit echtem Provider</td><td>⚠️</td><td>Braucht API-Key</td></tr><tr><td>Web-Chat (Stufe 1/2/3)</td><td>⚠️</td><td>Braucht Playwright + echte URLs</td></tr><tr><td>Sprachfunktion</td><td>⚠️</td><td>Braucht Mikrofon + Internet (Web Speech API)</td></tr><tr><td>Agenten-Integration</td><td>⚠️</td><td>Braucht externes Modell</td></tr></tbody></table><strong>Test-Strategie:</strong>
+</code></pre>bash
+<h1>Unit-Tests (keine API nötig)</h1>
+<p>npm test -- snippet-extractor</p>
+<p>npm test -- git-loop</p>
+<p>npm test -- persistence</p>
+
+<h1>Integration-Tests (Mock-API)</h1>
+<p>npm test -- round-executor --mock-api</p>
+
+<h1>E2E-Tests (echte API, optional)</h1>
+<p>npm test:e2e -- api-chat  # Nur wenn API_KEY gesetzt</p>
+</code>`<code>
+
+<hr>
+
+<h2>Zusammenfassung</h2>
+
+<strong>Offene Entscheidungen:</strong>
+<li><strong>WebContentsView Z-Order</strong>: Wie genau managen wir Fokus zwischen React Flow Canvas und nativen Electron-Views?</li>
+<li><strong>Agenten-Integration</strong>: Soll der Agent in v0.1 schon dabei sein, oder erst v0.2?</li>
+<li><strong>Profil-Instanzierung</strong>: Wie genau funktioniert "instanziiert" vs "normal" technisch?</li>
+
+<strong>Nächste Schritte:</strong>
+<li>Prototyp-Review (visueller Abgleich mit </code>tisch-orchestrator.html<code>)</li>
+<li>React Flow Setup + Custom Nodes</li>
+<li>Git-Loop Implementation</li>
+<li>API-Chat Adapter (mit Mock für Tests)</li>
+<li>Erste Runde testen (mit Mock-API)</li>
+
+<strong>Fragen an den Design-Agenten:</strong>
+<li>Gibt es den Prototyp </code>tisch-orchestrator.html` schon, oder soll ich ihn erstellen?</li>
+<li>Soll ich mit React Flow Setup anfangen, oder erst die Git-Loop Logik implementieren?</li>
+<li>Welche der offenen Entscheidungen soll ich zuerst klären?</li>
+
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</body>
+</html>
