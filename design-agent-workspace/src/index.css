@@ -1,0 +1,382 @@
+/* Inter font bundled locally - no network dependency */
+@font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/Inter-VariableFont_opsz,wght.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* TISCH Design - Vergilbtes Karopapier */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    background-color: #F2EAD3;
+    color: #2B2B28;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Karopapier-Pattern als Hintergrund */
+.paper-grid {
+    background-color: #F2EAD3;
+    background-image: 
+        linear-gradient(to right, #D4C5A9 1px, transparent 1px),
+        linear-gradient(to bottom, #D4C5A9 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+/* Karten-Stil für TISCH */
+.tisch-card {
+    background-color: #FFFBF0;
+    border: 1px solid #D4C5A9;
+    box-shadow: 
+        0 2px 4px rgba(43, 43, 40, 0.1),
+        0 4px 8px rgba(43, 43, 40, 0.05);
+    transition: all 0.2s ease;
+}
+
+.tisch-card:hover {
+    box-shadow: 
+        0 4px 8px rgba(43, 43, 40, 0.15),
+        0 8px 16px rgba(43, 43, 40, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Sidebar-Stil */
+.tisch-sidebar {
+    background-color: #E8DCC4;
+    border-right: 1px solid #D4C5A9;
+}
+
+/* Topbar-Stil */
+.tisch-topbar {
+    background-color: #E8DCC4;
+    border-bottom: 1px solid #D4C5A9;
+}
+
+/* Schwebende Leiste */
+.tisch-floating-bar {
+    background-color: rgba(232, 220, 196, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid #D4C5A9;
+    box-shadow: 0 4px 12px rgba(43, 43, 40, 0.15);
+}
+
+/* Buttons im TISCH-Design */
+.tisch-button {
+    background-color: #FFFBF0;
+    border: 1px solid #D4C5A9;
+    color: #2B2B28;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: all 0.15s ease;
+}
+
+.tisch-button:hover {
+    background-color: #F2EAD3;
+    border-color: #8B5CF6;
+}
+
+.tisch-button-primary {
+    background-color: #8B5CF6;
+    border: 1px solid #7C3AED;
+    color: white;
+}
+
+.tisch-button-primary:hover {
+    background-color: #7C3AED;
+}
+
+.tisch-button-danger {
+    background-color: #C4453B;
+    border: 1px solid #A3382F;
+    color: white;
+}
+
+.tisch-button-danger:hover {
+    background-color: #A3382F;
+}
+
+/* Inputs im TISCH-Design */
+.tisch-input {
+    background-color: #FFFBF0;
+    border: 1px solid #D4C5A9;
+    color: #2B2B28;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.tisch-input:focus {
+    outline: none;
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+/* Scrollbar im TISCH-Design */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #E8DCC4;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #D4C5A9;
+    border-radius: 5px;
+    border: 2px solid #E8DCC4;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #C4B599;
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #D4C5A9 #E8DCC4;
+}
+
+/* Remove color input border */
+input[type="color"] {
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 8px;
+}
+
+input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 8px;
+}
+
+/* Neon glow animation for newly added items */
+@keyframes neon-glow-violet {
+
+    0%,
+    100% {
+        box-shadow: 0 0 3px #8b5cf6, 0 0 7px #8b5cf6, 0 0 14px #8b5cf6, 0 0 28px #8b5cf6;
+    }
+
+    50% {
+        box-shadow: 0 0 7px #a855f7, 0 0 14px #a855f7, 0 0 28px #a855f7, 0 0 42px #a855f7;
+    }
+}
+
+@keyframes neon-glow-green {
+
+    0%,
+    100% {
+        box-shadow: 0 0 3px #22c55e, 0 0 7px #22c55e, 0 0 14px #22c55e, 0 0 28px #22c55e;
+    }
+
+    50% {
+        box-shadow: 0 0 7px #4ade80, 0 0 14px #4ade80, 0 0 28px #4ade80, 0 0 42px #4ade80;
+    }
+}
+
+.neon-glow-violet {
+    animation: neon-glow-violet 1s ease-in-out infinite;
+}
+
+.neon-glow-green {
+    animation: neon-glow-green 1s ease-in-out infinite;
+}
+
+/* Toast notification animation */
+@keyframes slideDown {
+    0% {
+        transform: translate(-50%, -100%);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+.animate-slideDown {
+    animation: slideDown 0.3s ease-out forwards;
+}
+
+/* Titlebar toast animations */
+@keyframes titlebarToastEnter {
+    0% {
+        transform: translate(-50%, -150%);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+    }
+}
+
+@keyframes titlebarToastExit {
+    0% {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, 50%);
+        opacity: 0;
+    }
+}
+
+.animate-titlebar-toast-enter {
+    animation: titlebarToastEnter 0.25s ease-out forwards;
+}
+
+.animate-titlebar-toast-exit {
+    animation: titlebarToastExit 0.2s ease-in forwards;
+}
+
+/* Smooth scrolling for settings content */
+.settings-scroll-smooth {
+    scroll-behavior: smooth;
+}
+
+/* Logo shine effect on hover */
+.logo-shine {
+    position: relative;
+    overflow: hidden;
+}
+
+.logo-shine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent);
+    transition: none;
+}
+
+.logo-shine:hover::before {
+    animation: shine 0.6s ease-in-out;
+}
+
+.logo-shine:hover {
+    animation: logo-glow-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes shine {
+    0% {
+        left: -60%;
+    }
+
+    100% {
+        left: 120%;
+    }
+}
+
+@keyframes logo-glow-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 8px #8b5cf6, 0 0 16px rgba(139, 92, 246, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 12px #a855f7, 0 0 24px rgba(168, 85, 247, 0.5);
+    }
+}
+
+/* Tab loading shimmer animation */
+@keyframes tab-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.tab-loading-shimmer {
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(139, 92, 246, 0.3) 25%,
+            rgba(168, 85, 247, 0.5) 50%,
+            rgba(139, 92, 246, 0.3) 75%,
+            transparent 100%);
+    background-size: 200% 100%;
+    animation: tab-shimmer 1.4s linear infinite;
+}
+
+/* Global Spinbox (number input) styling */
+input[type="number"] {
+    background-color: #1e1e1e;
+    border: 1px solid #3e3e42;
+    border-radius: 6px;
+    color: white;
+    padding: 6px 12px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+input[type="number"]:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+input[type="number"]:hover {
+    border-color: #52525b;
+}
+
+/* Completely hide spinbox arrows to avoid the ugly white box */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+    display: none;
+}
+
+/* Full-screen pulse flash for pinned tab click */
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
